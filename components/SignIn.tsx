@@ -29,7 +29,20 @@ export default function SignIn({ onSuccess, onSwitchToSignUp }: SignInProps) {
       await signInWithEmailAndPassword(auth, email, password)
       onSuccess?.()
     } catch (err: any) {
-      setError(err.message || 'Failed to sign in')
+      const errorCode = err.code
+      if (errorCode === 'auth/user-not-found') {
+        setError('Email not found. Please sign up first.')
+      } else if (errorCode === 'auth/wrong-password') {
+        setError('Incorrect password. Please try again.')
+      } else if (errorCode === 'auth/invalid-email') {
+        setError('Invalid email address.')
+      } else if (errorCode === 'auth/user-disabled') {
+        setError('This account has been disabled.')
+      } else if (errorCode === 'auth/invalid-credential') {
+        setError('Invalid email or password. Please try again.')
+      } else {
+        setError('Failed to sign in. Please try again.')
+      }
     } finally {
       setLoading(false)
     }
