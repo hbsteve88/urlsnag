@@ -3,6 +3,7 @@ import './globals.css'
 import { AuthProvider } from '@/components/AuthContext'
 import { ToastProvider } from '@/components/ToastContext'
 import SystemNotificationListener from '@/components/SystemNotificationListener'
+import DevelopmentBanner from '@/components/DevelopmentBanner'
 
 export const metadata: Metadata = {
   title: 'URLSNAG - Buy & Sell Premium Domains',
@@ -20,6 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-white">
+        <DevelopmentBanner />
         <AuthProvider>
           <ToastProvider>
             <SystemNotificationListener />
