@@ -483,18 +483,17 @@ export default function AdminDashboardV2() {
       {/* All Listings Tab */}
       {activeTab === 'all' && (
         <div>
-          <div className="mb-6">
+          <div className="sticky top-16 z-40 mb-6 bg-white rounded-lg shadow p-4 space-y-4">
             <input
               type="text"
               placeholder="Search by domain, category, or seller email..."
               value={allSearchQuery}
               onChange={(e) => setAllSearchQuery(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 mb-4"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
-          </div>
 
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="flex flex-wrap items-center gap-4">
+            <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="flex flex-wrap items-center gap-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-900 mb-2">Status</label>
                 <select
@@ -528,6 +527,7 @@ export default function AdminDashboardV2() {
                 />
                 <span className="text-sm font-medium text-gray-700">Live Only</span>
               </label>
+            </div>
             </div>
           </div>
 
