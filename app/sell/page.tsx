@@ -843,7 +843,7 @@ export default function SellPage() {
                         type="url"
                         value={newSocial.url}
                         onChange={(e) => setNewSocial({ ...newSocial, url: e.target.value })}
-                        placeholder="https://instagram.com/username"
+                        placeholder={newSocial.platform === 'Instagram' ? 'https://instagram.com/username' : newSocial.platform === 'Facebook' ? 'https://facebook.com/username' : newSocial.platform === 'Twitter' ? 'https://twitter.com/username' : newSocial.platform === 'TikTok' ? 'https://tiktok.com/@username' : newSocial.platform === 'YouTube' ? 'https://youtube.com/@username' : newSocial.platform === 'LinkedIn' ? 'https://linkedin.com/in/username' : 'https://example.com/username'}
                         className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                       />
                       <button
