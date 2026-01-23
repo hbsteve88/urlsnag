@@ -502,7 +502,6 @@ export default function SellPage() {
               />
               <div>
                 <span className="text-sm font-medium text-gray-900">Adult Content in Domain Name</span>
-                <p className="text-xs text-gray-600 mt-1">We auto-detected adult-oriented keywords in your domain name. Uncheck if this was flagged incorrectly.</p>
               </div>
             </label>
 

@@ -433,7 +433,6 @@ export default function EditDomainPage() {
             />
             <div>
               <span className="text-sm font-medium text-gray-900">Adult Content in Domain Name</span>
-              {hasAdultContent && <p className="text-xs text-gray-600 mt-1">We auto-detected adult-oriented keywords in your domain name. Uncheck if this was flagged incorrectly.</p>}
             </div>
           </label>
 
@@ -829,7 +828,6 @@ export default function EditDomainPage() {
                     />
                     <div>
                       <span className="text-sm font-medium text-gray-900">Website Contains Adult Content</span>
-                      {hasWebsiteAdultContent && <p className="text-xs text-gray-600 mt-1">The website associated with this domain contains adult-oriented material.</p>}
                     </div>
                   </label>
                 </>
