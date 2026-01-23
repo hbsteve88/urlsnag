@@ -9,6 +9,7 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import { useToast } from '@/components/ToastContext'
 import PromotionCheckoutModal from '@/components/PromotionCheckoutModal'
+import ConfirmDialog from '@/components/ConfirmDialog'
 import { Edit, Trash2, AlertCircle, Loader, Eye, X, Zap } from 'lucide-react'
 import { PROMOTION_PACKAGES } from '@/lib/promotionConfig'
 import { logPromotionView } from '@/lib/promotionAnalytics'
@@ -61,6 +62,7 @@ export default function MyDomainsPage() {
   const [showPromotedOnly, setShowPromotedOnly] = useState(false)
   const [promotionModal, setPromotionModal] = useState<DomainListing | null>(null)
   const [promotingId, setPromotingId] = useState<string | null>(null)
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
 
   useEffect(() => {
     if (authLoading) return
@@ -149,15 +151,21 @@ export default function MyDomainsPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this domain listing?')) return
+    setDeleteConfirm(id)
+  }
+
+  const confirmDelete = async () => {
+    if (!deleteConfirm) return
 
     try {
-      await deleteDoc(doc(db, 'listings', id))
-      setDomains(domains.filter(d => d.id !== id))
+      await deleteDoc(doc(db, 'listings', deleteConfirm))
+      setDomains(domains.filter(d => d.id !== deleteConfirm))
       success('Domain listing deleted successfully')
+      setDeleteConfirm(null)
     } catch (err) {
       console.error('Error deleting domain:', err)
       error('Failed to delete domain')
+      setDeleteConfirm(null)
     }
   }
 
@@ -726,6 +734,18 @@ export default function MyDomainsPage() {
           isLoading={promotingId === promotionModal.id}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={deleteConfirm !== null}
+        title="Delete Domain Listing"
+        message="Are you sure you want to delete this domain listing? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        isDangerous={true}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteConfirm(null)}
+      />
 
       <Footer />
     </div>
