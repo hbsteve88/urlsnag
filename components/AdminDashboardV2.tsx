@@ -621,7 +621,7 @@ export default function AdminDashboardV2() {
       {/* Active Listings Tab */}
       {activeTab === 'active' && (
         <div>
-          <div className="mb-6">
+          <div className="sticky top-16 z-40 mb-6 bg-white rounded-lg shadow p-4">
             <input
               type="text"
               placeholder="Search by domain, category, or seller email..."
@@ -709,17 +709,16 @@ export default function AdminDashboardV2() {
       {/* Pending Approvals Tab */}
       {activeTab === 'pending' && (
         <div>
-          <div className="mb-6">
+          <div className="sticky top-16 z-40 mb-6 bg-white rounded-lg shadow p-4 space-y-4">
             <input
               type="text"
               placeholder="Search by domain, category, or seller email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 mb-4"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
-          </div>
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="flex items-center gap-6 mb-4">
+            <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="flex items-center gap-6 mb-4">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
@@ -763,6 +762,7 @@ export default function AdminDashboardV2() {
                 </button>
               </div>
             )}
+            </div>
           </div>
 
           <div className="grid gap-4">
@@ -1093,7 +1093,7 @@ export default function AdminDashboardV2() {
       {/* Promoted Tab */}
       {activeTab === 'promoted' && (
         <div>
-          <div className="mb-6">
+          <div className="sticky top-16 z-40 mb-6 bg-white rounded-lg shadow p-4">
             <input
               type="text"
               placeholder="Search by domain name..."
