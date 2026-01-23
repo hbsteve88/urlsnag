@@ -207,17 +207,7 @@ export default function SignIn({ onSuccess, onSwitchToSignUp }: SignInProps) {
           </button>
         </div>
 
-        <div className="mt-6 pt-6 border-t border-gray-200">
-          <p className="text-sm text-gray-600 text-center">
-            Don't have an account?{' '}
-            <button
-              onClick={onSwitchToSignUp}
-              className="text-blue-600 hover:text-blue-700 font-medium"
-            >
-              Sign up
-            </button>
-          </p>
-        </div>
+        {/* Sign up temporarily disabled during development */}
       </div>
     </div>
   )
