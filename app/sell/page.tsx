@@ -492,22 +492,19 @@ export default function SellPage() {
               <p className="text-xs text-gray-500 mt-1">💡 AI automatically suggests the best category based on your domain name. You can change it anytime.</p>
             </div>
 
-            {/* Adult Content Disclaimer */}
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <h3 className="text-sm font-semibold text-red-900 mb-3">⚠️ Adult-Oriented Content Declaration</h3>
-              <p className="text-xs text-red-800 mb-4">
-                Failing to declare adult-oriented content is a serious violation. Listings with undeclared adult content will be rejected and repeated violations may result in account suspension or permanent cancellation.
-              </p>
-              <label className="flex items-start gap-3">
-                <input
-                  type="checkbox"
-                  checked={hasAdultContent}
-                  onChange={(e) => setHasAdultContent(e.target.checked)}
-                  className="w-4 h-4 rounded border-gray-300 mt-0.5 flex-shrink-0"
-                />
-                <span className="text-sm text-red-900 font-medium">This domain name or associated website contains adult-oriented content</span>
-              </label>
-            </div>
+            {/* Adult Content in Domain Name */}
+            <label className="flex items-start gap-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+              <input
+                type="checkbox"
+                checked={hasAdultContent}
+                onChange={(e) => setHasAdultContent(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-300 mt-0.5 flex-shrink-0"
+              />
+              <div>
+                <span className="text-sm font-medium text-gray-900">Adult Content in Domain Name</span>
+                <p className="text-xs text-gray-600 mt-1">We auto-detected adult-oriented keywords in your domain name. Uncheck if this was flagged incorrectly.</p>
+              </div>
+            </label>
 
             {/* Price Mode Selection */}
             <div>
