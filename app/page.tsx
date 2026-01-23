@@ -169,8 +169,8 @@ export default function Home() {
       <div className="bg-red-600 text-white py-3 px-4">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex-1">
-            <p className="font-semibold">🚀 URLSnag is in Development</p>
-            <p className="text-sm text-red-100">We're building something amazing. Enter your email to be notified when we launch.</p>
+            <p className="font-semibold">Site in Development</p>
+            <p className="text-sm text-red-100">Enter your email to be notified when we launch.</p>
           </div>
           <form onSubmit={handleNotifySubmit} className="flex gap-2 w-full sm:w-auto">
             <input
