@@ -624,11 +624,6 @@ export default function EditDomainPage() {
                   )}
                 </>
               )}
-              {domain.verified && (
-                <p className="text-xs text-green-800">
-                  Your domain ownership has been verified. You can now make this domain live once it's approved.
-                </p>
-              )}
             </div>
           )}
 
@@ -645,6 +640,61 @@ export default function EditDomainPage() {
               <p className="text-xs text-gray-600 mt-1">We auto-detected adult-oriented keywords in your domain name. Uncheck if this was flagged incorrectly.</p>
             </div>
           </label>
+
+          {isPending && !domain?.verified && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+              <p className="text-xs text-amber-900 mb-3">
+                To make your domain live, you need to verify ownership by adding a DNS record to your registrar.
+              </p>
+              {domain?.dnsToken && (
+                <>
+                  <div className="bg-white p-3 rounded border border-amber-200 mb-3 font-mono text-xs break-all">
+                    {domain.dnsToken}
+                  </div>
+                  <button
+                    onClick={async () => {
+                      setSaving(true)
+                      try {
+                        const response = await fetch('/api/verify-dns', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ domain: domain.domain, token: domain.dnsToken }),
+                        })
+
+                        const result = await response.json()
+
+                        if (result.verified) {
+                          // Update domain with verified status
+                          await updateDoc(doc(db, 'listings', domainId), { verified: true })
+                          setDomain(prev => prev ? { ...prev, verified: true } : null)
+                          success('✓ Domain verified successfully!')
+                        } else {
+                          error(result.message || 'DNS record not found. Please ensure you\'ve added it to your registrar and wait for propagation.')
+                        }
+                      } catch (err) {
+                        console.error('Error checking DNS record:', err)
+                        error('Failed to check DNS record. Please try again.')
+                      } finally {
+                        setSaving(false)
+                      }
+                    }}
+                    disabled={saving}
+                    className="w-full px-3 py-2 bg-amber-600 text-white rounded text-xs font-medium hover:bg-amber-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  >
+                    {saving ? 'Checking...' : 'Check for DNS Record'}
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+
+          {domain?.verified && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <p className="text-xs text-green-800">
+                ✓ Your domain ownership has been verified. You can now make this domain live once it's approved.
+              </p>
+            </div>
+          )}
 
           {/* How do you want to sell? */}
           <div>
