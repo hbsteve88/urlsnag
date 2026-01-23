@@ -419,6 +419,20 @@ export default function EditDomainPage() {
             <p className="text-xs text-gray-500 mt-1">💡 AI automatically suggests the best category based on your domain name. You can change it anytime.</p>
           </div>
 
+          {/* Adult Content in Domain Name */}
+          <label className="flex items-start gap-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+            <input
+              type="checkbox"
+              checked={hasAdultContent}
+              onChange={(e) => setHasAdultContent(e.target.checked)}
+              className="w-4 h-4 rounded border-gray-300 mt-0.5 flex-shrink-0"
+            />
+            <div>
+              <span className="text-sm font-medium text-gray-900">Adult Content in Domain Name</span>
+              <p className="text-xs text-gray-600 mt-1">We auto-detected adult-oriented keywords in your domain name. Uncheck if this was flagged incorrectly.</p>
+            </div>
+          </label>
+
           {/* DNS Verification Status */}
           {domain && (
             <div className={`border rounded-lg p-4 ${domain.verified ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}`}>
@@ -626,20 +640,6 @@ export default function EditDomainPage() {
               )}
             </div>
           )}
-
-          {/* Adult Content in Domain Name */}
-          <label className="flex items-start gap-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-            <input
-              type="checkbox"
-              checked={hasAdultContent}
-              onChange={(e) => setHasAdultContent(e.target.checked)}
-              className="w-4 h-4 rounded border-gray-300 mt-0.5 flex-shrink-0"
-            />
-            <div>
-              <span className="text-sm font-medium text-gray-900">Adult Content in Domain Name</span>
-              <p className="text-xs text-gray-600 mt-1">We auto-detected adult-oriented keywords in your domain name. Uncheck if this was flagged incorrectly.</p>
-            </div>
-          </label>
 
           {isPending && !domain?.verified && (
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
