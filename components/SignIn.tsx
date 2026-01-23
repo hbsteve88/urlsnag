@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import { AlertCircle, Loader, Check } from 'lucide-react'
@@ -19,6 +19,22 @@ export default function SignIn({ onSuccess, onSwitchToSignUp }: SignInProps) {
   const [resetEmail, setResetEmail] = useState('')
   const [resetLoading, setResetLoading] = useState(false)
   const [resetSuccess, setResetSuccess] = useState(false)
+  const emailRef = useRef<HTMLInputElement>(null)
+  const passwordRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    const checkAutofill = () => {
+      if (emailRef.current?.value && emailRef.current.value !== email) {
+        setEmail(emailRef.current.value)
+      }
+      if (passwordRef.current?.value && passwordRef.current.value !== password) {
+        setPassword(passwordRef.current.value)
+      }
+    }
+
+    const interval = setInterval(checkAutofill, 100)
+    return () => clearInterval(interval)
+  }, [email, password])
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -145,6 +161,7 @@ export default function SignIn({ onSuccess, onSwitchToSignUp }: SignInProps) {
               Email
             </label>
             <input
+              ref={emailRef}
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -160,6 +177,7 @@ export default function SignIn({ onSuccess, onSwitchToSignUp }: SignInProps) {
               Password
             </label>
             <input
+              ref={passwordRef}
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
