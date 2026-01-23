@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { db } from '@/lib/firebase'
 
 export default function DevelopmentBanner() {
   const [notifyEmail, setNotifyEmail] = useState('')
@@ -11,7 +13,10 @@ export default function DevelopmentBanner() {
     if (!notifyEmail.trim()) return
     
     try {
-      console.log('Email registered for launch notification:', notifyEmail)
+      await addDoc(collection(db, 'launch_notifications'), {
+        email: notifyEmail,
+        createdAt: serverTimestamp(),
+      })
       setEmailSubmitted(true)
       setNotifyEmail('')
       setTimeout(() => setEmailSubmitted(false), 3000)
