@@ -108,13 +108,9 @@ export default function Header({
               </>
             )}
             {!user && (
-              <button
-                type="button"
-                onClick={() => setIsAuthModalOpen(true)}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium cursor-pointer"
-              >
+              <div className="px-6 py-2 bg-gray-200 text-gray-600 rounded-lg font-medium cursor-not-allowed opacity-50" title="Sign ups temporarily disabled during development">
                 Sign In / Sign Up
-              </button>
+              </div>
             )}
           </nav>
 
@@ -190,13 +186,9 @@ export default function Header({
               </>
             )}
             {!user && (
-              <button
-                type="button"
-                onClick={() => setIsAuthModalOpen(true)}
-                className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium cursor-pointer"
-              >
+              <div className="w-full px-4 py-2 bg-gray-200 text-gray-600 rounded-lg font-medium cursor-not-allowed opacity-50 text-center" title="Sign ups temporarily disabled during development">
                 Sign In / Sign Up
-              </button>
+              </div>
             )}
           </nav>
         )}
