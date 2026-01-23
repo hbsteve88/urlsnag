@@ -304,7 +304,7 @@ export default function MyDomainsPage() {
         )}
 
         {domains.length > 0 && (
-          <div className="sticky top-0 z-40 mb-6 bg-white rounded-lg shadow p-3 sm:p-4 space-y-3">
+          <div className="sticky top-16 z-40 mb-6 bg-white rounded-lg shadow p-3 sm:p-4 space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <input
                 type="text"
