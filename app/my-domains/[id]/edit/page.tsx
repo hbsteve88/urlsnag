@@ -37,6 +37,7 @@ interface DomainListing {
   hasSocialAccounts?: boolean
   socialMedia?: Array<{ platform: string; url: string }>
   hasAdultContent?: boolean
+  hasWebsiteAdultContent?: boolean
   dnsToken?: string
   verified?: boolean
   forSalePageEnabled?: boolean
@@ -81,6 +82,7 @@ export default function EditDomainPage() {
   const [successMessage, setSuccessMessage] = useState('')
   const [lightboxImage, setLightboxImage] = useState<string | null>(null)
   const [hasAdultContent, setHasAdultContent] = useState(false)
+  const [hasWebsiteAdultContent, setHasWebsiteAdultContent] = useState(false)
   const [adultContentAcknowledged, setAdultContentAcknowledged] = useState(false)
   const [selectedRegistrar, setSelectedRegistrar] = useState<string>('')
   const [forSalePageEnabled, setForSalePageEnabled] = useState(false)
@@ -187,6 +189,7 @@ export default function EditDomainPage() {
       setHasBusinessAssets(data.hasBusinessAssets || false)
       setHasSocialAccounts(data.hasSocialAccounts || false)
       setHasAdultContent(data.hasAdultContent || false)
+      setHasWebsiteAdultContent(data.hasWebsiteAdultContent || false)
       setHideMinimumOffer(data.hideMinimumOffer || false)
       setHideReservePrice(data.hideReservePrice || false)
       setForSalePageEnabled(data.forSalePageEnabled || false)
@@ -301,6 +304,7 @@ export default function EditDomainPage() {
       updateData.businessAssets = businessAssets
       updateData.hasSocialAccounts = hasSocialAccounts
       updateData.socialMedia = socialAccounts
+      updateData.hasWebsiteAdultContent = hasWebsiteAdultContent
       updateData.forSalePageEnabled = forSalePageEnabled
 
       if (listingImageFile) {
@@ -429,7 +433,7 @@ export default function EditDomainPage() {
             />
             <div>
               <span className="text-sm font-medium text-gray-900">Adult Content in Domain Name</span>
-              <p className="text-xs text-gray-600 mt-1">We auto-detected adult-oriented keywords in your domain name. Uncheck if this was flagged incorrectly.</p>
+              {hasAdultContent && <p className="text-xs text-gray-600 mt-1">We auto-detected adult-oriented keywords in your domain name. Uncheck if this was flagged incorrectly.</p>}
             </div>
           </label>
 
@@ -461,7 +465,7 @@ export default function EditDomainPage() {
                     </select>
                   </div>
 
-                  {selectedRegistrar && (
+                  {selectedRegistrar && domain && !domain.verified && (
                     <>
                       <div className="space-y-2 mb-4">
                         <div className="bg-white p-3 rounded border border-amber-200">
@@ -641,60 +645,6 @@ export default function EditDomainPage() {
             </div>
           )}
 
-          {isPending && !domain?.verified && (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-              <p className="text-xs text-amber-900 mb-3">
-                To make your domain live, you need to verify ownership by adding a DNS record to your registrar.
-              </p>
-              {domain?.dnsToken && (
-                <>
-                  <div className="bg-white p-3 rounded border border-amber-200 mb-3 font-mono text-xs break-all">
-                    {domain.dnsToken}
-                  </div>
-                  <button
-                    onClick={async () => {
-                      setSaving(true)
-                      try {
-                        const response = await fetch('/api/verify-dns', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ domain: domain.domain, token: domain.dnsToken }),
-                        })
-
-                        const result = await response.json()
-
-                        if (result.verified) {
-                          // Update domain with verified status
-                          await updateDoc(doc(db, 'listings', domainId), { verified: true })
-                          setDomain(prev => prev ? { ...prev, verified: true } : null)
-                          success('✓ Domain verified successfully!')
-                        } else {
-                          error(result.message || 'DNS record not found. Please ensure you\'ve added it to your registrar and wait for propagation.')
-                        }
-                      } catch (err) {
-                        console.error('Error checking DNS record:', err)
-                        error('Failed to check DNS record. Please try again.')
-                      } finally {
-                        setSaving(false)
-                      }
-                    }}
-                    disabled={saving}
-                    className="w-full px-3 py-2 bg-amber-600 text-white rounded text-xs font-medium hover:bg-amber-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                  >
-                    {saving ? 'Checking...' : 'Check for DNS Record'}
-                  </button>
-                </>
-              )}
-            </div>
-          )}
-
-          {domain?.verified && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <p className="text-xs text-green-800">
-                ✓ Your domain ownership has been verified. You can now make this domain live once it's approved.
-              </p>
-            </div>
-          )}
 
           {/* How do you want to sell? */}
           <div>
@@ -861,14 +811,28 @@ export default function EditDomainPage() {
                 />
                 <span className="text-sm font-medium text-gray-700">Includes Website</span>
               </label>
-              {hasWebsite && (
-                <input
-                  type="url"
-                  value={formData.website}
-                  onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                  placeholder="https://example.com"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                />
+                {hasWebsite && (
+                <>
+                  <input
+                    type="url"
+                    value={formData.website}
+                    onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                    placeholder="https://example.com"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 mb-3"
+                  />
+                  <label className="flex items-start gap-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                    <input
+                      type="checkbox"
+                      checked={hasWebsiteAdultContent}
+                      onChange={(e) => setHasWebsiteAdultContent(e.target.checked)}
+                      className="w-4 h-4 rounded border-gray-300 mt-0.5 flex-shrink-0"
+                    />
+                    <div>
+                      <span className="text-sm font-medium text-gray-900">Website Contains Adult Content</span>
+                      {hasWebsiteAdultContent && <p className="text-xs text-gray-600 mt-1">The website associated with this domain contains adult-oriented material.</p>}
+                    </div>
+                  </label>
+                </>
               )}
             </div>
 
