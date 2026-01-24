@@ -9,8 +9,9 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import { useToast } from '@/components/ToastContext'
-import { AlertCircle, Loader, Upload, X, ChevronDown } from 'lucide-react'
+import { AlertCircle, Loader, Upload, X, ChevronDown, Link2, Trash2 } from 'lucide-react'
 import { CATEGORIES, suggestCategory } from '@/lib/categories'
+import { collection, query, where, getDocs } from 'firebase/firestore'
 
 interface DomainListing {
   id: string
@@ -41,6 +42,8 @@ interface DomainListing {
   dnsToken?: string
   verified?: boolean
   forSalePageEnabled?: boolean
+  groupId?: string
+  groupName?: string
 }
 
 export default function EditDomainPage() {
@@ -87,6 +90,8 @@ export default function EditDomainPage() {
   const [selectedRegistrar, setSelectedRegistrar] = useState<string>('')
   const [forSalePageEnabled, setForSalePageEnabled] = useState(false)
   const [showForSaleSetup, setShowForSaleSetup] = useState(false)
+  const [groupDomains, setGroupDomains] = useState<string[]>([])
+  const [showRemoveGroupConfirm, setShowRemoveGroupConfirm] = useState(false)
   const debounceTimer = useRef<NodeJS.Timeout | null>(null)
 
 
@@ -207,11 +212,47 @@ export default function EditDomainPage() {
       if (data.logo && !data.logo.includes('stylized')) {
         setListingImagePreview(data.logo)
       }
+
+      // Fetch group domains if part of a group
+      if (data.groupId) {
+        try {
+          const q = query(
+            collection(db, 'listings'),
+            where('groupId', '==', data.groupId)
+          )
+          const snapshot = await getDocs(q)
+          const domains = snapshot.docs.map(doc => doc.data().domain).sort()
+          setGroupDomains(domains)
+        } catch (err) {
+          console.error('Error fetching group domains:', err)
+        }
+      }
     } catch (err) {
       console.error('Error fetching domain:', err)
       setErrorMessage('Failed to load domain')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleRemoveFromGroup = async () => {
+    if (!domain?.groupId) return
+
+    setSaving(true)
+    try {
+      await updateDoc(doc(db, 'listings', domainId), {
+        groupId: null,
+        groupName: null,
+      })
+      setDomain(prev => prev ? { ...prev, groupId: undefined, groupName: undefined } : null)
+      setGroupDomains([])
+      setShowRemoveGroupConfirm(false)
+      success('Domain removed from group')
+    } catch (err) {
+      console.error('Error removing from group:', err)
+      error('Failed to remove domain from group')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -422,6 +463,39 @@ export default function EditDomainPage() {
             </div>
             <p className="text-xs text-gray-500 mt-1">💡 AI automatically suggests the best category based on your domain name. You can change it anytime.</p>
           </div>
+
+          {/* Group Information */}
+          {domain?.groupId && (
+            <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+              <div className="flex items-center gap-2 mb-3">
+                <Link2 className="w-5 h-5 text-purple-600" />
+                <h3 className="font-semibold text-purple-900">Domain Group Bundle</h3>
+              </div>
+              <p className="text-sm text-purple-800 mb-3">
+                This domain is part of a group. <strong>The price you set applies to the entire bundle</strong> - all domains in this group will be sold together for one price.
+              </p>
+              <div className="mb-4 p-3 bg-white rounded border border-purple-100">
+                <p className="text-xs font-semibold text-gray-700 mb-2">Domains in this group:</p>
+                <div className="space-y-1">
+                  {groupDomains.map((d, idx) => (
+                    <div key={idx} className="text-sm text-gray-700 flex items-center gap-2">
+                      <Link2 className="w-3 h-3 text-purple-600" />
+                      {d}
+                      {d === domain.domain && <span className="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded">Current</span>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowRemoveGroupConfirm(true)}
+                className="w-full px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition font-medium text-sm flex items-center justify-center gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                Remove from Group
+              </button>
+            </div>
+          )}
 
           {/* Adult Content in Domain Name */}
           <label className="flex items-start gap-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
@@ -1111,33 +1185,37 @@ export default function EditDomainPage() {
             </button>
           </div>
         </form>
-      </main>
 
-      {/* Image Lightbox Modal */}
-      {lightboxImage && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4"
-          onClick={() => setLightboxImage(null)}
-        >
-          <div className="relative max-w-4xl max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
-            <img
-              src={lightboxImage}
-              alt="Full size"
-              className="w-full h-full object-contain"
-            />
-            <button
-              onClick={() => setLightboxImage(null)}
-              className="absolute top-4 right-4 bg-white text-black rounded-full p-2 hover:bg-gray-200 transition"
-            >
-              <X className="w-6 h-6" />
-            </button>
-            <p className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm">
-              Click anywhere to close
-            </p>
+        {/* Remove from Group Confirmation Modal */}
+        {showRemoveGroupConfirm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">Remove from Group?</h2>
+              <p className="text-sm text-gray-700 mb-6">
+                Are you sure you want to remove this domain from the group? It will no longer be sold as part of the bundle.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowRemoveGroupConfirm(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRemoveFromGroup}
+                  disabled={saving}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 transition font-medium flex items-center justify-center gap-2"
+                >
+                  {saving && <Loader className="w-4 h-4 animate-spin" />}
+                  {saving ? 'Removing...' : 'Remove'}
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
-
+        )}
+      </main>
       <Footer />
     </div>
   )
