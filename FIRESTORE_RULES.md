@@ -157,6 +157,19 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // ============ LAUNCH NOTIFICATIONS COLLECTION ============
+    match /launch_notifications/{notificationId} {
+      // Anyone can submit their email (no authentication required)
+      allow create: if request.resource.data.email is string &&
+                       request.resource.data.email.size() > 0;
+      
+      // Only admin can read notifications
+      allow read: if isAdmin();
+      
+      // No updates or deletes allowed
+      allow update, delete: if false;
+    }
+
     // ============ CATCH ALL ============
     match /{document=**} {
       allow read, write: if false;

@@ -270,6 +270,48 @@ export default function AdminDashboardV2() {
     }
   }
 
+  const handleMarkVerified = async (listingId: string) => {
+    setActionLoading(true)
+    try {
+      await updateDoc(doc(db, 'listings', listingId), {
+        verified: true,
+      })
+      setAllListings(allListings.map(l => 
+        l.id === listingId ? { ...l, verified: true } : l
+      ))
+      if (selectedListing?.id === listingId) {
+        setSelectedListing({ ...selectedListing, verified: true })
+      }
+      success('Domain marked as verified')
+    } catch (err) {
+      console.error('Error marking listing as verified:', err)
+      error('Failed to mark domain as verified')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handleMarkUnverified = async (listingId: string) => {
+    setActionLoading(true)
+    try {
+      await updateDoc(doc(db, 'listings', listingId), {
+        verified: false,
+      })
+      setAllListings(allListings.map(l => 
+        l.id === listingId ? { ...l, verified: false } : l
+      ))
+      if (selectedListing?.id === listingId) {
+        setSelectedListing({ ...selectedListing, verified: false })
+      }
+      success('Domain marked as unverified')
+    } catch (err) {
+      console.error('Error marking listing as unverified:', err)
+      error('Failed to mark domain as unverified')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
   const handleBulkApprove = async () => {
     if (selectedListings.size === 0) {
       error('Please select listings to approve')
@@ -300,6 +342,39 @@ export default function AdminDashboardV2() {
     } catch (err) {
       console.error('Error in bulk approve:', err)
       error('Failed to approve domains')
+    } finally {
+      setBulkApproving(false)
+    }
+  }
+
+  const handleBulkVerify = async () => {
+    if (selectedListings.size === 0) {
+      error('Please select listings to verify')
+      return
+    }
+
+    setBulkApproving(true)
+    try {
+      let verifiedCount = 0
+      const listingIds = Array.from(selectedListings)
+      for (const listingId of listingIds) {
+        try {
+          await updateDoc(doc(db, 'listings', listingId), {
+            verified: true,
+          })
+          verifiedCount++
+        } catch (err) {
+          console.error(`Error verifying listing ${listingId}:`, err)
+        }
+      }
+      setAllListings(allListings.map(l => 
+        selectedListings.has(l.id) ? { ...l, verified: true } : l
+      ))
+      setSelectedListings(new Set())
+      success(`${verifiedCount} domain(s) verified successfully`)
+    } catch (err) {
+      console.error('Error in bulk verify:', err)
+      error('Failed to verify domains')
     } finally {
       setBulkApproving(false)
     }
@@ -528,6 +603,28 @@ export default function AdminDashboardV2() {
                 <span className="text-sm font-medium text-gray-700">Live Only</span>
               </label>
             </div>
+
+            {selectedListings.size > 0 && (
+              <div className="flex items-center gap-4 pt-4 border-t border-gray-200">
+                <span className="text-sm font-medium text-gray-700">
+                  {selectedListings.size} selected
+                </span>
+                <button
+                  onClick={handleBulkApprove}
+                  disabled={bulkApproving}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium disabled:opacity-50"
+                >
+                  {bulkApproving ? 'Approving...' : 'Bulk Approve'}
+                </button>
+                <button
+                  onClick={handleBulkVerify}
+                  disabled={bulkApproving}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium disabled:opacity-50"
+                >
+                  {bulkApproving ? 'Verifying...' : 'Bulk Verify'}
+                </button>
+              </div>
+            )}
             </div>
           </div>
 
@@ -537,9 +634,42 @@ export default function AdminDashboardV2() {
                 <p className="text-gray-600">No listings found</p>
               </div>
             ) : (
-              filteredListings.map(listing => (
+              <>
+                <div className="flex items-center gap-4 mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <input
+                    type="checkbox"
+                    checked={selectedListings.size > 0 && selectedListings.size === filteredListings.length}
+                    onChange={() => {
+                      if (selectedListings.size === filteredListings.length) {
+                        setSelectedListings(new Set())
+                      } else {
+                        setSelectedListings(new Set(filteredListings.map(l => l.id)))
+                      }
+                    }}
+                    className="w-5 h-5 rounded border-gray-300 cursor-pointer"
+                  />
+                  <label className="text-sm font-medium text-gray-700 cursor-pointer">
+                    Select All ({filteredListings.length})
+                  </label>
+                </div>
+                {filteredListings.map(listing => (
                 <div key={listing.id} className="bg-white rounded-lg shadow p-4">
                   <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-3 flex-1">
+                      <input
+                        type="checkbox"
+                        checked={selectedListings.has(listing.id)}
+                        onChange={(e) => {
+                          const newSelected = new Set(selectedListings)
+                          if (e.target.checked) {
+                            newSelected.add(listing.id)
+                          } else {
+                            newSelected.delete(listing.id)
+                          }
+                          setSelectedListings(newSelected)
+                        }}
+                        className="w-4 h-4 rounded border-gray-300 mt-1 flex-shrink-0"
+                      />
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <h3 className="text-lg font-bold text-blue-600">{listing.domain}</h3>
@@ -583,36 +713,57 @@ export default function AdminDashboardV2() {
                         </div>
                       </div>
                     </div>
-                    <button
-                      onClick={() => {
-                        setEditingListing(listing)
-                        setEditPriceMode(
-                          listing.priceType === 'asking' ? 'set' : 
-                          listing.priceType === 'accepting_offers' ? 'accepting' : 
-                          'auction'
-                        )
-                        setEditFormData({
-                          domain: listing.domain,
-                          category: listing.category,
-                          price: listing.price.toString(),
-                          description: listing.description,
-                          priceType: listing.priceType,
-                          minimumOfferPrice: listing.minimumOfferPrice?.toString() || '',
-                          startingBid: listing.startingBid?.toString() || '',
-                          reservePrice: listing.reservePrice?.toString() || '',
-                          website: listing.website || '',
-                          businessName: listing.businessName || '',
-                          businessDescription: listing.businessDescription || '',
-                        })
-                      }}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
-                    >
-                      <Edit2 className="w-4 h-4 inline mr-2" />
-                      Edit
-                    </button>
+                    <div className="flex gap-2">
+                      {listing.verified ? (
+                        <button
+                          onClick={() => handleMarkUnverified(listing.id)}
+                          disabled={actionLoading}
+                          className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition font-medium disabled:opacity-50"
+                        >
+                          Unverify
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleMarkVerified(listing.id)}
+                          disabled={actionLoading}
+                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium disabled:opacity-50"
+                        >
+                          Verify
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          setEditingListing(listing)
+                          setEditPriceMode(
+                            listing.priceType === 'asking' ? 'set' : 
+                            listing.priceType === 'accepting_offers' ? 'accepting' : 
+                            'auction'
+                          )
+                          setEditFormData({
+                            domain: listing.domain,
+                            category: listing.category,
+                            price: listing.price.toString(),
+                            description: listing.description,
+                            priceType: listing.priceType,
+                            minimumOfferPrice: listing.minimumOfferPrice?.toString() || '',
+                            startingBid: listing.startingBid?.toString() || '',
+                            reservePrice: listing.reservePrice?.toString() || '',
+                            website: listing.website || '',
+                            businessName: listing.businessName || '',
+                            businessDescription: listing.businessDescription || '',
+                          })
+                        }}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
+                      >
+                        <Edit2 className="w-4 h-4 inline mr-2" />
+                        Edit
+                      </button>
+                    </div>
+                    </div>
                   </div>
                 </div>
-              ))
+              ))}
+              </>
             )}
           </div>
         </div>
@@ -671,33 +822,52 @@ export default function AdminDashboardV2() {
                         </div>
                       </div>
                     </div>
-                    <button
-                      onClick={() => {
-                        setEditingListing(listing)
-                        setEditPriceMode(
-                          listing.priceType === 'asking' ? 'set' : 
-                          listing.priceType === 'accepting_offers' ? 'accepting' : 
-                          'auction'
-                        )
-                        setEditFormData({
-                          domain: listing.domain,
-                          category: listing.category,
-                          price: listing.price.toString(),
-                          description: listing.description,
-                          priceType: listing.priceType,
-                          minimumOfferPrice: listing.minimumOfferPrice?.toString() || '',
-                          startingBid: listing.startingBid?.toString() || '',
-                          reservePrice: listing.reservePrice?.toString() || '',
-                          website: listing.website || '',
-                          businessName: listing.businessName || '',
-                          businessDescription: listing.businessDescription || '',
-                        })
-                      }}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
-                    >
-                      <Edit2 className="w-4 h-4 inline mr-2" />
-                      Edit
-                    </button>
+                    <div className="flex gap-2">
+                      {listing.verified ? (
+                        <button
+                          onClick={() => handleMarkUnverified(listing.id)}
+                          disabled={actionLoading}
+                          className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition font-medium disabled:opacity-50"
+                        >
+                          Unverify
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleMarkVerified(listing.id)}
+                          disabled={actionLoading}
+                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium disabled:opacity-50"
+                        >
+                          Verify
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          setEditingListing(listing)
+                          setEditPriceMode(
+                            listing.priceType === 'asking' ? 'set' : 
+                            listing.priceType === 'accepting_offers' ? 'accepting' : 
+                            'auction'
+                          )
+                          setEditFormData({
+                            domain: listing.domain,
+                            category: listing.category,
+                            price: listing.price.toString(),
+                            description: listing.description,
+                            priceType: listing.priceType,
+                            minimumOfferPrice: listing.minimumOfferPrice?.toString() || '',
+                            startingBid: listing.startingBid?.toString() || '',
+                            reservePrice: listing.reservePrice?.toString() || '',
+                            website: listing.website || '',
+                            businessName: listing.businessName || '',
+                            businessDescription: listing.businessDescription || '',
+                          })
+                        }}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
+                      >
+                        <Edit2 className="w-4 h-4 inline mr-2" />
+                        Edit
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))
@@ -748,20 +918,37 @@ export default function AdminDashboardV2() {
               </button>
             </div>
 
-            {selectedListings.size > 0 && (
-              <div className="flex items-center gap-4">
-                <span className="text-sm font-medium text-gray-700">
-                  {selectedListings.size} selected
-                </span>
-                <button
-                  onClick={handleBulkApprove}
-                  disabled={bulkApproving}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium disabled:opacity-50"
-                >
-                  {bulkApproving ? 'Approving...' : 'Bulk Approve'}
-                </button>
-              </div>
-            )}
+            <div className="flex items-center gap-4 pt-4 border-t border-gray-200">
+              <input
+                type="checkbox"
+                checked={selectedListings.size > 0 && selectedListings.size === filteredListings.length}
+                onChange={() => {
+                  if (selectedListings.size === filteredListings.length) {
+                    setSelectedListings(new Set())
+                  } else {
+                    setSelectedListings(new Set(filteredListings.map(l => l.id)))
+                  }
+                }}
+                className="w-5 h-5 rounded border-gray-300 cursor-pointer"
+              />
+              <label className="text-sm font-medium text-gray-700 cursor-pointer">
+                Select All ({filteredListings.length})
+              </label>
+              {selectedListings.size > 0 && (
+                <>
+                  <span className="text-sm text-gray-600 ml-auto">
+                    {selectedListings.size} selected
+                  </span>
+                  <button
+                    onClick={handleBulkApprove}
+                    disabled={bulkApproving}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium disabled:opacity-50"
+                  >
+                    {bulkApproving ? 'Approving...' : 'Bulk Approve'}
+                  </button>
+                </>
+              )}
+            </div>
             </div>
           </div>
 

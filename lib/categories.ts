@@ -1,92 +1,73 @@
 const baseCategories = [
-  { name: 'Accounting', color: '#16A34A', bgColor: 'bg-green-300', textColor: 'text-green-900', borderColor: 'border-green-500' },
-  { name: 'Advertising', color: '#F97316', bgColor: 'bg-orange-200', textColor: 'text-orange-900', borderColor: 'border-orange-400' },
-  { name: 'Agriculture', color: '#22C55E', bgColor: 'bg-green-100', textColor: 'text-green-800', borderColor: 'border-green-300' },
-  { name: 'AI', color: '#0EA5E9', bgColor: 'bg-sky-100', textColor: 'text-sky-800', borderColor: 'border-sky-300' },
-  { name: 'Analytics', color: '#D946EF', bgColor: 'bg-fuchsia-100', textColor: 'text-fuchsia-800', borderColor: 'border-fuchsia-300' },
-  { name: 'Architecture', color: '#5B21B6', bgColor: 'bg-purple-400', textColor: 'text-purple-900', borderColor: 'border-purple-600' },
-  { name: 'Automation', color: '#06B6D4', bgColor: 'bg-cyan-100', textColor: 'text-cyan-800', borderColor: 'border-cyan-300' },
-  { name: 'Automotive', color: '#EF4444', bgColor: 'bg-red-100', textColor: 'text-red-800', borderColor: 'border-red-300' },
-  { name: 'Banking', color: '#4ADE80', bgColor: 'bg-green-100', textColor: 'text-green-800', borderColor: 'border-green-300' },
-  { name: 'Beauty', color: '#BE185D', bgColor: 'bg-pink-300', textColor: 'text-pink-900', borderColor: 'border-pink-500' },
-  { name: 'Beverage', color: '#FBBF24', bgColor: 'bg-amber-200', textColor: 'text-amber-900', borderColor: 'border-amber-400' },
-  { name: 'Biotech', color: '#E11D48', bgColor: 'bg-rose-200', textColor: 'text-rose-900', borderColor: 'border-rose-400' },
-  { name: 'Branding', color: '#EA580C', bgColor: 'bg-orange-300', textColor: 'text-orange-900', borderColor: 'border-orange-500' },
-  { name: 'Careers', color: '#0284C7', bgColor: 'bg-sky-200', textColor: 'text-sky-900', borderColor: 'border-sky-400' },
-  { name: 'Civic', color: '#082F49', bgColor: 'bg-blue-500', textColor: 'text-blue-900', borderColor: 'border-blue-700' },
-  { name: 'Climate', color: '#65A30D', bgColor: 'bg-lime-200', textColor: 'text-lime-900', borderColor: 'border-lime-400' },
-  { name: 'Cloud', color: '#8B5CF6', bgColor: 'bg-purple-100', textColor: 'text-purple-800', borderColor: 'border-purple-300' },
-  { name: 'Coaching', color: '#0EA5E9', bgColor: 'bg-sky-100', textColor: 'text-sky-800', borderColor: 'border-sky-300' },
-  { name: 'Commerce', color: '#F59E0B', bgColor: 'bg-amber-100', textColor: 'text-amber-800', borderColor: 'border-amber-300' },
-  { name: 'Community', color: '#6D28D9', bgColor: 'bg-violet-200', textColor: 'text-violet-900', borderColor: 'border-violet-400' },
-  { name: 'Compliance', color: '#1E3A8A', bgColor: 'bg-blue-300', textColor: 'text-blue-900', borderColor: 'border-blue-500' },
-  { name: 'Consulting', color: '#FCD34D', bgColor: 'bg-yellow-100', textColor: 'text-yellow-800', borderColor: 'border-yellow-300' },
-  { name: 'Content', color: '#991B1B', bgColor: 'bg-red-300', textColor: 'text-red-900', borderColor: 'border-red-500' },
-  { name: 'Construction', color: '#6D28D9', bgColor: 'bg-purple-300', textColor: 'text-purple-900', borderColor: 'border-purple-500' },
-  { name: 'Courses', color: '#0284C7', bgColor: 'bg-sky-200', textColor: 'text-sky-900', borderColor: 'border-sky-400' },
-  { name: 'Data', color: '#A855F7', bgColor: 'bg-purple-200', textColor: 'text-purple-900', borderColor: 'border-purple-400' },
-  { name: 'Education', color: '#3B82F6', bgColor: 'bg-blue-100', textColor: 'text-blue-800', borderColor: 'border-blue-300' },
-  { name: 'Energy', color: '#F59E0B', bgColor: 'bg-amber-100', textColor: 'text-amber-800', borderColor: 'border-amber-300' },
-  { name: 'Engineering', color: '#334155', bgColor: 'bg-slate-300', textColor: 'text-slate-900', borderColor: 'border-slate-500' },
-  { name: 'Entertainment', color: '#6D28D9', bgColor: 'bg-purple-300', textColor: 'text-purple-900', borderColor: 'border-purple-500' },
-  { name: 'Esports', color: '#7C3AED', bgColor: 'bg-purple-200', textColor: 'text-purple-900', borderColor: 'border-purple-400' },
-  { name: 'Events', color: '#14B8A6', bgColor: 'bg-teal-100', textColor: 'text-teal-800', borderColor: 'border-teal-300' },
-  { name: 'Fashion', color: '#DB2777', bgColor: 'bg-pink-200', textColor: 'text-pink-900', borderColor: 'border-pink-400' },
-  { name: 'Farming', color: '#16A34A', bgColor: 'bg-green-200', textColor: 'text-green-900', borderColor: 'border-green-400' },
-  { name: 'Finance', color: '#65A30D', bgColor: 'bg-lime-200', textColor: 'text-lime-900', borderColor: 'border-lime-400' },
-  { name: 'Fitness', color: '#BE185D', bgColor: 'bg-pink-300', textColor: 'text-pink-900', borderColor: 'border-pink-500' },
-  { name: 'Food', color: '#F59E0B', bgColor: 'bg-amber-100', textColor: 'text-amber-800', borderColor: 'border-amber-300' },
-  { name: 'Gaming', color: '#8B5CF6', bgColor: 'bg-purple-100', textColor: 'text-purple-800', borderColor: 'border-purple-300' },
-  { name: 'Government', color: '#0C4A6E', bgColor: 'bg-blue-400', textColor: 'text-blue-900', borderColor: 'border-blue-600' },
-  { name: 'Hardware', color: '#10B981', bgColor: 'bg-emerald-100', textColor: 'text-emerald-800', borderColor: 'border-emerald-300' },
-  { name: 'Health', color: '#EC4899', bgColor: 'bg-pink-100', textColor: 'text-pink-800', borderColor: 'border-pink-300' },
-  { name: 'Hospitality', color: '#0E7490', bgColor: 'bg-cyan-300', textColor: 'text-cyan-900', borderColor: 'border-cyan-500' },
-  { name: 'Housing', color: '#A78BFA', bgColor: 'bg-purple-200', textColor: 'text-purple-900', borderColor: 'border-purple-400' },
-  { name: 'HR', color: '#0369A1', bgColor: 'bg-sky-300', textColor: 'text-sky-900', borderColor: 'border-sky-500' },
-  { name: 'Industrial', color: '#475569', bgColor: 'bg-slate-200', textColor: 'text-slate-900', borderColor: 'border-slate-400' },
-  { name: 'Infrastructure', color: '#DC2626', bgColor: 'bg-red-200', textColor: 'text-red-900', borderColor: 'border-red-400' },
-  { name: 'Insurance', color: '#22C55E', bgColor: 'bg-green-200', textColor: 'text-green-900', borderColor: 'border-green-400' },
-  { name: 'Jobs', color: '#0EA5E9', bgColor: 'bg-sky-100', textColor: 'text-sky-800', borderColor: 'border-sky-300' },
-  { name: 'Learning', color: '#1E40AF', bgColor: 'bg-blue-200', textColor: 'text-blue-900', borderColor: 'border-blue-400' },
-  { name: 'Legal', color: '#1E40AF', bgColor: 'bg-blue-200', textColor: 'text-blue-900', borderColor: 'border-blue-400' },
-  { name: 'Lifestyle', color: '#EC4899', bgColor: 'bg-pink-100', textColor: 'text-pink-800', borderColor: 'border-pink-300' },
-  { name: 'Logistics', color: '#991B1B', bgColor: 'bg-red-400', textColor: 'text-red-900', borderColor: 'border-red-600' },
-  { name: 'Luxury', color: '#9D174D', bgColor: 'bg-pink-400', textColor: 'text-pink-900', borderColor: 'border-pink-600' },
-  { name: 'Manufacturing', color: '#64748B', bgColor: 'bg-slate-100', textColor: 'text-slate-800', borderColor: 'border-slate-300' },
-  { name: 'Marketplace', color: '#FBBF24', bgColor: 'bg-amber-200', textColor: 'text-amber-900', borderColor: 'border-amber-400' },
-  { name: 'Marketing', color: '#FB923C', bgColor: 'bg-orange-100', textColor: 'text-orange-800', borderColor: 'border-orange-300' },
-  { name: 'Materials', color: '#1E293B', bgColor: 'bg-slate-400', textColor: 'text-slate-900', borderColor: 'border-slate-600' },
-  { name: 'Media', color: '#DC2626', bgColor: 'bg-red-100', textColor: 'text-red-800', borderColor: 'border-red-300' },
-  { name: 'Medical', color: '#F43F5E', bgColor: 'bg-rose-100', textColor: 'text-rose-800', borderColor: 'border-rose-300' },
-  { name: 'Mobility', color: '#DC2626', bgColor: 'bg-red-200', textColor: 'text-red-900', borderColor: 'border-red-400' },
-  { name: 'Networking', color: '#EA580C', bgColor: 'bg-orange-100', textColor: 'text-orange-800', borderColor: 'border-orange-300' },
-  { name: 'Payments', color: '#84CC16', bgColor: 'bg-lime-100', textColor: 'text-lime-800', borderColor: 'border-lime-300' },
-  { name: 'Pharma', color: '#BE123C', bgColor: 'bg-rose-300', textColor: 'text-rose-900', borderColor: 'border-rose-500' },
-  { name: 'Privacy', color: '#F43F5E', bgColor: 'bg-rose-100', textColor: 'text-rose-800', borderColor: 'border-rose-300' },
-  { name: 'Property', color: '#7C3AED', bgColor: 'bg-purple-200', textColor: 'text-purple-900', borderColor: 'border-purple-400' },
-  { name: 'Publishing', color: '#B91C1C', bgColor: 'bg-red-200', textColor: 'text-red-900', borderColor: 'border-red-400' },
-  { name: 'Realty', color: '#8B5CF6', bgColor: 'bg-purple-100', textColor: 'text-purple-800', borderColor: 'border-purple-300' },
-  { name: 'Recreation', color: '#DC2626', bgColor: 'bg-red-200', textColor: 'text-red-900', borderColor: 'border-red-400' },
-  { name: 'Retail', color: '#FCD34D', bgColor: 'bg-yellow-100', textColor: 'text-yellow-800', borderColor: 'border-yellow-300' },
-  { name: 'Robotics', color: '#14B8A6', bgColor: 'bg-teal-100', textColor: 'text-teal-800', borderColor: 'border-teal-300' },
-  { name: 'Security', color: '#EC4899', bgColor: 'bg-pink-100', textColor: 'text-pink-800', borderColor: 'border-pink-300' },
-  { name: 'Services', color: '#FBBF24', bgColor: 'bg-amber-200', textColor: 'text-amber-900', borderColor: 'border-amber-400' },
-  { name: 'Shipping', color: '#7F1D1D', bgColor: 'bg-red-500', textColor: 'text-red-900', borderColor: 'border-red-700' },
-  { name: 'Social', color: '#7C3AED', bgColor: 'bg-violet-100', textColor: 'text-violet-800', borderColor: 'border-violet-300' },
-  { name: 'Software', color: '#1E40AF', bgColor: 'bg-blue-200', textColor: 'text-blue-900', borderColor: 'border-blue-400' },
-  { name: 'Sports', color: '#EF4444', bgColor: 'bg-red-100', textColor: 'text-red-800', borderColor: 'border-red-300' },
-  { name: 'Staffing', color: '#075985', bgColor: 'bg-sky-400', textColor: 'text-sky-900', borderColor: 'border-sky-600' },
-  { name: 'Support', color: '#F59E0B', bgColor: 'bg-amber-100', textColor: 'text-amber-800', borderColor: 'border-amber-300' },
-  { name: 'Sustainability', color: '#84CC16', bgColor: 'bg-lime-100', textColor: 'text-lime-800', borderColor: 'border-lime-300' },
-  { name: 'Tech', color: '#3B82F6', bgColor: 'bg-blue-100', textColor: 'text-blue-800', borderColor: 'border-blue-300' },
-  { name: 'Telecom', color: '#EF4444', bgColor: 'bg-red-100', textColor: 'text-red-800', borderColor: 'border-red-300' },
-  { name: 'Tourism', color: '#0891B2', bgColor: 'bg-cyan-200', textColor: 'text-cyan-900', borderColor: 'border-cyan-400' },
-  { name: 'Training', color: '#1E3A8A', bgColor: 'bg-blue-300', textColor: 'text-blue-900', borderColor: 'border-blue-500' },
-  { name: 'Transport', color: '#B91C1C', bgColor: 'bg-red-300', textColor: 'text-red-900', borderColor: 'border-red-500' },
-  { name: 'Travel', color: '#06B6D4', bgColor: 'bg-cyan-100', textColor: 'text-cyan-800', borderColor: 'border-cyan-300' },
-  { name: 'Utilities', color: '#FBBF24', bgColor: 'bg-amber-200', textColor: 'text-amber-900', borderColor: 'border-amber-400' },
-  { name: 'Wellness', color: '#DB2777', bgColor: 'bg-pink-200', textColor: 'text-pink-900', borderColor: 'border-pink-400' },
-  { name: 'Wholesale', color: '#FBBF24', bgColor: 'bg-amber-200', textColor: 'text-amber-900', borderColor: 'border-amber-400' },
+  { name: 'Accounting & Compliance', color: '#059669', bgColor: 'bg-emerald-100', textColor: 'text-emerald-800', borderColor: 'border-emerald-300' },
+  { name: 'AI & Automation', color: '#0891B2', bgColor: 'bg-cyan-100', textColor: 'text-cyan-800', borderColor: 'border-cyan-300' },
+  { name: 'APIs & Integrations', color: '#0284C7', bgColor: 'bg-sky-100', textColor: 'text-sky-800', borderColor: 'border-sky-300' },
+  { name: 'Apps & Tools', color: '#2563EB', bgColor: 'bg-blue-100', textColor: 'text-blue-800', borderColor: 'border-blue-300' },
+  { name: 'Architecture & Design', color: '#7C3AED', bgColor: 'bg-purple-100', textColor: 'text-purple-800', borderColor: 'border-purple-300' },
+  { name: 'Agriculture & Farming', color: '#16A34A', bgColor: 'bg-green-100', textColor: 'text-green-800', borderColor: 'border-green-300' },
+  { name: 'Auctions & Listings', color: '#FBBF24', bgColor: 'bg-amber-100', textColor: 'text-amber-800', borderColor: 'border-amber-300' },
+  { name: 'Automotive & Mobility', color: '#DC2626', bgColor: 'bg-red-100', textColor: 'text-red-800', borderColor: 'border-red-300' },
+  { name: 'Banking & Insurance', color: '#22C55E', bgColor: 'bg-green-100', textColor: 'text-green-800', borderColor: 'border-green-300' },
+  { name: 'Blogs & News', color: '#EF4444', bgColor: 'bg-red-100', textColor: 'text-red-800', borderColor: 'border-red-300' },
+  { name: 'Branding & Design', color: '#A855F7', bgColor: 'bg-purple-100', textColor: 'text-purple-800', borderColor: 'border-purple-300' },
+  { name: 'Calculators & Converters', color: '#FCD34D', bgColor: 'bg-yellow-100', textColor: 'text-yellow-800', borderColor: 'border-yellow-300' },
+  { name: 'Cloud & Infrastructure', color: '#8B5CF6', bgColor: 'bg-purple-100', textColor: 'text-purple-800', borderColor: 'border-purple-300' },
+  { name: 'Commerce & Shopping', color: '#F59E0B', bgColor: 'bg-amber-100', textColor: 'text-amber-800', borderColor: 'border-amber-300' },
+  { name: 'Construction & Home', color: '#D97706', bgColor: 'bg-amber-100', textColor: 'text-amber-800', borderColor: 'border-amber-300' },
+  { name: 'Content & Creators', color: '#BE185D', bgColor: 'bg-pink-100', textColor: 'text-pink-800', borderColor: 'border-pink-300' },
+  { name: 'Courses & Training', color: '#1D4ED8', bgColor: 'bg-blue-100', textColor: 'text-blue-800', borderColor: 'border-blue-300' },
+  { name: 'Dashboards & Analytics', color: '#D946EF', bgColor: 'bg-fuchsia-100', textColor: 'text-fuchsia-800', borderColor: 'border-fuchsia-300' },
+  { name: 'Data & Analytics', color: '#9333EA', bgColor: 'bg-purple-100', textColor: 'text-purple-800', borderColor: 'border-purple-300' },
+  { name: 'Dating & Relationships', color: '#EC4899', bgColor: 'bg-pink-100', textColor: 'text-pink-800', borderColor: 'border-pink-300' },
+  { name: 'Deals & Coupons', color: '#FB923C', bgColor: 'bg-orange-100', textColor: 'text-orange-800', borderColor: 'border-orange-300' },
+  { name: 'DIY & Crafts', color: '#84CC16', bgColor: 'bg-lime-100', textColor: 'text-lime-800', borderColor: 'border-lime-300' },
+  { name: 'Donations & Crowdfunding', color: '#10B981', bgColor: 'bg-emerald-100', textColor: 'text-emerald-800', borderColor: 'border-emerald-300' },
+  { name: 'Education & Learning', color: '#3B82F6', bgColor: 'bg-blue-100', textColor: 'text-blue-800', borderColor: 'border-blue-300' },
+  { name: 'Fashion & Beauty', color: '#DB2777', bgColor: 'bg-pink-100', textColor: 'text-pink-800', borderColor: 'border-pink-300' },
+  { name: 'Fitness & Nutrition', color: '#F43F5E', bgColor: 'bg-rose-100', textColor: 'text-rose-800', borderColor: 'border-rose-300' },
+  { name: 'Food & Beverage', color: '#EA580C', bgColor: 'bg-orange-100', textColor: 'text-orange-800', borderColor: 'border-orange-300' },
+  { name: 'Forms & Surveys', color: '#F97316', bgColor: 'bg-orange-100', textColor: 'text-orange-800', borderColor: 'border-orange-300' },
+  { name: 'Forums & Communities', color: '#6366F1', bgColor: 'bg-indigo-100', textColor: 'text-indigo-800', borderColor: 'border-indigo-300' },
+  { name: 'Freelance & Gigs', color: '#0369A1', bgColor: 'bg-sky-100', textColor: 'text-sky-800', borderColor: 'border-sky-300' },
+  { name: 'Games & Entertainment', color: '#7C3AED', bgColor: 'bg-purple-100', textColor: 'text-purple-800', borderColor: 'border-purple-300' },
+  { name: 'Government & Civic', color: '#1E40AF', bgColor: 'bg-blue-100', textColor: 'text-blue-800', borderColor: 'border-blue-300' },
+  { name: 'Guides & Resources', color: '#0EA5E9', bgColor: 'bg-sky-100', textColor: 'text-sky-800', borderColor: 'border-sky-300' },
+  { name: 'Health & Wellness', color: '#06B6D4', bgColor: 'bg-cyan-100', textColor: 'text-cyan-800', borderColor: 'border-cyan-300' },
+  { name: 'Hobbies & Collectibles', color: '#B91C1C', bgColor: 'bg-red-100', textColor: 'text-red-800', borderColor: 'border-red-300' },
+  { name: 'Home & Garden', color: '#65A30D', bgColor: 'bg-lime-100', textColor: 'text-lime-800', borderColor: 'border-lime-300' },
+  { name: 'Influencers & Creators', color: '#E11D48', bgColor: 'bg-rose-100', textColor: 'text-rose-800', borderColor: 'border-rose-300' },
+  { name: 'Jobs & Careers', color: '#2DD4BF', bgColor: 'bg-teal-100', textColor: 'text-teal-800', borderColor: 'border-teal-300' },
+  { name: 'Legal & Compliance', color: '#4F46E5', bgColor: 'bg-indigo-100', textColor: 'text-indigo-800', borderColor: 'border-indigo-300' },
+  { name: 'Lifestyle & Personal', color: '#F472B6', bgColor: 'bg-pink-100', textColor: 'text-pink-800', borderColor: 'border-pink-300' },
+  { name: 'Luxury & Style', color: '#C084FC', bgColor: 'bg-purple-100', textColor: 'text-purple-800', borderColor: 'border-purple-300' },
+  { name: 'Marketing & Advertising', color: '#F97316', bgColor: 'bg-orange-100', textColor: 'text-orange-800', borderColor: 'border-orange-300' },
+  { name: 'Marketplaces & Platforms', color: '#FBBF24', bgColor: 'bg-amber-100', textColor: 'text-amber-800', borderColor: 'border-amber-300' },
+  { name: 'Media & Publishing', color: '#7F1D1D', bgColor: 'bg-red-100', textColor: 'text-red-800', borderColor: 'border-red-300' },
+  { name: 'Medical & Biotech', color: '#DC2626', bgColor: 'bg-red-100', textColor: 'text-red-800', borderColor: 'border-red-300' },
+  { name: 'Meetups & Events', color: '#14B8A6', bgColor: 'bg-teal-100', textColor: 'text-teal-800', borderColor: 'border-teal-300' },
+  { name: 'Music & Audio', color: '#A78BFA', bgColor: 'bg-purple-100', textColor: 'text-purple-800', borderColor: 'border-purple-300' },
+  { name: 'Nonprofits & Causes', color: '#059669', bgColor: 'bg-emerald-100', textColor: 'text-emerald-800', borderColor: 'border-emerald-300' },
+  { name: 'Outdoor & Adventure', color: '#92400E', bgColor: 'bg-amber-100', textColor: 'text-amber-800', borderColor: 'border-amber-300' },
+  { name: 'Parenting & Family', color: '#7C2D12', bgColor: 'bg-orange-100', textColor: 'text-orange-800', borderColor: 'border-orange-300' },
+  { name: 'Payments & Finance', color: '#CA8A04', bgColor: 'bg-yellow-100', textColor: 'text-yellow-800', borderColor: 'border-yellow-300' },
+  { name: 'Pets & Animals', color: '#15803D', bgColor: 'bg-green-100', textColor: 'text-green-800', borderColor: 'border-green-300' },
+  { name: 'Photography & Art', color: '#C2410C', bgColor: 'bg-orange-100', textColor: 'text-orange-800', borderColor: 'border-orange-300' },
+  { name: 'Podcasts & Audio', color: '#7E22CE', bgColor: 'bg-purple-100', textColor: 'text-purple-800', borderColor: 'border-purple-300' },
+  { name: 'Portfolios & Profiles', color: '#0891B2', bgColor: 'bg-cyan-100', textColor: 'text-cyan-800', borderColor: 'border-cyan-300' },
+  { name: 'Real Estate & Property', color: '#92400E', bgColor: 'bg-amber-100', textColor: 'text-amber-800', borderColor: 'border-amber-300' },
+  { name: 'Restaurants & Dining', color: '#B45309', bgColor: 'bg-amber-100', textColor: 'text-amber-800', borderColor: 'border-amber-300' },
+  { name: 'Reviews & Ratings', color: '#6D28D9', bgColor: 'bg-purple-100', textColor: 'text-purple-800', borderColor: 'border-purple-300' },
+  { name: 'Security & Privacy', color: '#991B1B', bgColor: 'bg-red-100', textColor: 'text-red-800', borderColor: 'border-red-300' },
+  { name: 'Shipping & Supply', color: '#7F1D1D', bgColor: 'bg-red-500', textColor: 'text-red-900', borderColor: 'border-red-700' },
+  { name: 'Social & Communities', color: '#4F46E5', bgColor: 'bg-indigo-100', textColor: 'text-indigo-800', borderColor: 'border-indigo-300' },
+  { name: 'Sports & Recreation', color: '#DC2626', bgColor: 'bg-red-100', textColor: 'text-red-800', borderColor: 'border-red-300' },
+  { name: 'Streaming & Video', color: '#9333EA', bgColor: 'bg-purple-100', textColor: 'text-purple-800', borderColor: 'border-purple-300' },
+  { name: 'Subscriptions & Memberships', color: '#EA580C', bgColor: 'bg-orange-100', textColor: 'text-orange-800', borderColor: 'border-orange-300' },
+  { name: 'Tech & Software', color: '#1E40AF', bgColor: 'bg-blue-100', textColor: 'text-blue-800', borderColor: 'border-blue-300' },
+  { name: 'Tools & Utilities', color: '#FBBF24', bgColor: 'bg-amber-100', textColor: 'text-amber-800', borderColor: 'border-amber-300' },
+  { name: 'Tourism & Events', color: '#0891B2', bgColor: 'bg-cyan-100', textColor: 'text-cyan-800', borderColor: 'border-cyan-300' },
+  { name: 'Transport & Logistics', color: '#B91C1C', bgColor: 'bg-red-100', textColor: 'text-red-800', borderColor: 'border-red-300' },
+  { name: 'Travel & Hospitality', color: '#06B6D4', bgColor: 'bg-cyan-100', textColor: 'text-cyan-800', borderColor: 'border-cyan-300' },
 ]
 
 export const CATEGORIES = [
@@ -96,7 +77,34 @@ export const CATEGORIES = [
 ]
 
 export function getCategoryConfig(categoryName: string) {
-  return CATEGORIES.find(cat => cat.name === categoryName) || CATEGORIES[0]
+  if (!categoryName) return CATEGORIES[0]
+  
+  const normalized = categoryName.trim().toLowerCase()
+  
+  // Exact match (case-insensitive)
+  const exactMatch = CATEGORIES.find(cat => cat.name.toLowerCase() === normalized)
+  if (exactMatch) return exactMatch
+  
+  // Partial match - prioritize matches where the stored value is the first word
+  const partialMatches = CATEGORIES.filter(cat => {
+    const catLower = cat.name.toLowerCase()
+    return catLower.includes(normalized) || normalized.includes(catLower)
+  })
+  
+  if (partialMatches.length > 0) {
+    // Prioritize matches where the stored value is at the start of the category name
+    const startsWithMatch = partialMatches.find(cat => 
+      cat.name.toLowerCase().startsWith(normalized)
+    )
+    if (startsWithMatch) return startsWithMatch
+    
+    // Otherwise return first match
+    return partialMatches[0]
+  }
+  
+  // Fallback to gray "Other" category
+  const otherCategory = CATEGORIES.find(cat => cat.name === 'Other')
+  return otherCategory || CATEGORIES[0]
 }
 
 export function suggestCategory(domainName: string): string {

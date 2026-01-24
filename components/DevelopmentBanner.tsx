@@ -22,6 +22,7 @@ export default function DevelopmentBanner() {
       setTimeout(() => setEmailSubmitted(false), 3000)
     } catch (err) {
       console.error('Error submitting email:', err)
+      alert(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`)
     }
   }
 

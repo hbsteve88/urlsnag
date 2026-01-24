@@ -481,34 +481,20 @@ export default function ListingsGrid({
           <div className="flex gap-2 overflow-x-auto pb-2">
             {categories.map((cat) => {
               const getCatColor = (category: string) => {
-                const colors: Record<string, string> = {
-                  'all': '#3B82F6',
-                  'Technology': '#3B82F6',
-                  'Ecommerce': '#EC4899',
-                  'Services': '#8B5CF6',
-                  'Health': '#06B6D4',
-                  'Finance': '#10B981',
-                  'Education': '#F59E0B',
-                  'Entertainment': '#EF4444',
-                  'Real Estate': '#D97706',
-                  'Travel': '#06B6D4',
-                  'Food': '#F97316',
-                  'Fashion': '#EC4899',
-                  'Sports': '#EF4444',
-                  'Gaming': '#A855F7',
-                  'Crypto': '#F59E0B',
-                  'AI': '#06B6D4',
-                  'SaaS': '#3B82F6',
-                }
-                return colors[category] || '#3B82F6'
+                if (category === 'all') return '#3B82F6'
+                const config = getCategoryConfig(category)
+                return config.color
               }
+              const catColor = getCatColor(cat)
               return (
                 <button
                   key={cat}
                   onClick={() => onCategoryChange(cat)}
                   style={{
-                    backgroundColor: filterCategory === cat ? getCatColor(cat) : '#F3F4F6',
-                    color: filterCategory === cat ? 'white' : '#374151',
+                    backgroundColor: filterCategory === cat ? catColor : catColor + '20',
+                    color: filterCategory === cat ? 'white' : catColor,
+                    borderColor: catColor,
+                    borderWidth: '1px'
                   }}
                   className="px-4 py-2 rounded-lg font-medium transition whitespace-nowrap hover:opacity-90"
                 >
@@ -840,8 +826,8 @@ function ListingCard({ listing, isSaved, onToggleSave, onSelect }: ListingCardPr
       <div 
         className="relative w-full h-40 group rounded-b-lg border-4"
         style={{ 
-          backgroundColor: getCategoryColor(listing.category),
-          borderColor: getCategoryColor(listing.category)
+          backgroundColor: getCategoryConfig(listing.category).color,
+          borderColor: getCategoryConfig(listing.category).color
         }}
       >
         {listing.thumbnail.startsWith('stylized:') ? (
@@ -861,7 +847,7 @@ function ListingCard({ listing, isSaved, onToggleSave, onSelect }: ListingCardPr
             
             return (
               <div
-                style={{ backgroundColor: getCategoryColor(listing.category) }}
+                style={{ backgroundColor: getCategoryConfig(listing.category).color }}
                 className="w-full h-full flex items-center justify-center rounded-b-lg px-2"
               >
                 <span className={`font-bold text-white text-center break-words ${getThumbnailFontSize(domainName)}`} style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>

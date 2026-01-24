@@ -10,9 +10,12 @@ import Footer from '@/components/Footer'
 import { useToast } from '@/components/ToastContext'
 import PromotionCheckoutModal from '@/components/PromotionCheckoutModal'
 import ConfirmDialog from '@/components/ConfirmDialog'
+import BulkEditModal, { BulkEditUpdates } from '@/components/BulkEditModal'
+import ConfirmationModal from '@/components/ConfirmationModal'
 import { Edit, Trash2, AlertCircle, Loader, Eye, X, Zap } from 'lucide-react'
 import { PROMOTION_PACKAGES } from '@/lib/promotionConfig'
 import { logPromotionView } from '@/lib/promotionAnalytics'
+import { getCategoryConfig } from '@/lib/categories'
 
 interface DomainListing {
   id: string
@@ -30,6 +33,10 @@ interface DomainListing {
   verified?: boolean
   dnsToken?: string
   hideMinimumOffer?: boolean
+  minimumOfferPrice?: number
+  startingBid?: number
+  reservePrice?: number
+  hideReservePrice?: boolean
 }
 
 const getPriceTypeLabel = (type: string) => {
@@ -63,6 +70,13 @@ export default function MyDomainsPage() {
   const [promotionModal, setPromotionModal] = useState<DomainListing | null>(null)
   const [promotingId, setPromotingId] = useState<string | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+  const [selectedDomains, setSelectedDomains] = useState<Set<string>>(new Set())
+  const [bulkEditModal, setBulkEditModal] = useState(false)
+  const [bulkEditLoading, setBulkEditLoading] = useState(false)
+  const [bulkMakeLiveConfirm, setBulkMakeLiveConfirm] = useState<{ isOpen: boolean; message: string }>({
+    isOpen: false,
+    message: '',
+  })
 
   useEffect(() => {
     if (authLoading) return
@@ -256,6 +270,149 @@ export default function MyDomainsPage() {
     }
   }
 
+  const toggleDomainSelection = (domainId: string) => {
+    const newSelected = new Set(selectedDomains)
+    if (newSelected.has(domainId)) {
+      newSelected.delete(domainId)
+    } else {
+      newSelected.add(domainId)
+    }
+    setSelectedDomains(newSelected)
+  }
+
+  const selectAllFiltered = () => {
+    if (selectedDomains.size === filteredDomains.length) {
+      setSelectedDomains(new Set())
+    } else {
+      setSelectedDomains(new Set(filteredDomains.map(d => d.id)))
+    }
+  }
+
+  const handleBulkEdit = async (updates: BulkEditUpdates) => {
+    if (selectedDomains.size === 0) return
+
+    setBulkEditLoading(true)
+    try {
+      let updatedCount = 0
+      const listingIds = Array.from(selectedDomains)
+      const updateData = updates as Record<string, any>
+      
+      for (const listingId of listingIds) {
+        try {
+          await updateDoc(doc(db, 'listings', listingId), updateData)
+          updatedCount++
+        } catch (err) {
+          console.error(`Error updating listing ${listingId}:`, err)
+        }
+      }
+
+      setDomains(domains.map(d => {
+        if (selectedDomains.has(d.id)) {
+          return {
+            ...d,
+            category: updates.category ?? d.category,
+            priceType: updates.priceType,
+            price: updates.price ?? d.price,
+            minimumOfferPrice: updates.minimumOfferPrice ?? d.minimumOfferPrice,
+            startingBid: updates.startingBid,
+            reservePrice: updates.reservePrice,
+            hideMinimumOffer: updates.hideMinimumOffer ?? d.hideMinimumOffer,
+            hideReservePrice: updates.hideReservePrice ?? d.hideReservePrice,
+          }
+        }
+        return d
+      }))
+
+      setSelectedDomains(new Set())
+      setBulkEditModal(false)
+      success(`Successfully updated ${updatedCount} domain${updatedCount !== 1 ? 's' : ''}`)
+    } catch (err) {
+      console.error('Error in bulk edit:', err)
+      error('Failed to update domains')
+    } finally {
+      setBulkEditLoading(false)
+    }
+  }
+
+  const handleBulkMakeLiveClick = () => {
+    if (selectedDomains.size === 0) return
+
+    const selectedDomainsArray = Array.from(selectedDomains)
+      .map(id => domains.find(d => d.id === id))
+      .filter(Boolean) as DomainListing[]
+
+    const alreadyLiveCount = selectedDomainsArray.filter(d => d.isLive).length
+    const domainsToMakeLive = selectedDomainsArray.filter(d => !d.isLive)
+
+    if (domainsToMakeLive.length === 0) {
+      error('All selected domains are already live')
+      return
+    }
+
+    const message = alreadyLiveCount > 0 
+      ? `Make ${domainsToMakeLive.length} domain${domainsToMakeLive.length !== 1 ? 's' : ''} live? (${alreadyLiveCount} already live)`
+      : `Make ${domainsToMakeLive.length} domain${domainsToMakeLive.length !== 1 ? 's' : ''} live?`
+
+    setBulkMakeLiveConfirm({ isOpen: true, message })
+  }
+
+  const handleBulkMakeLiveConfirm = async () => {
+    if (selectedDomains.size === 0) return
+
+    const selectedDomainsArray = Array.from(selectedDomains)
+      .map(id => domains.find(d => d.id === id))
+      .filter(Boolean) as DomainListing[]
+
+    const domainsToMakeLive = selectedDomainsArray.filter(d => !d.isLive)
+
+    setBulkEditLoading(true)
+    try {
+      let updatedCount = 0
+      let skippedCount = 0
+
+      for (const domain of domainsToMakeLive) {
+        try {
+          await updateDoc(doc(db, 'listings', domain.id), {
+            isLive: true,
+          })
+          updatedCount++
+        } catch (err) {
+          console.error(`Error making listing ${domain.id} live:`, err)
+          skippedCount++
+        }
+      }
+
+      setDomains(domains.map(d => {
+        if (selectedDomains.has(d.id) && !d.isLive) {
+          return { ...d, isLive: true }
+        }
+        return d
+      }))
+
+      setSelectedDomains(new Set())
+      setBulkMakeLiveConfirm({ isOpen: false, message: '' })
+      let successMessage = `Successfully made ${updatedCount} domain${updatedCount !== 1 ? 's' : ''} live!`
+      if (skippedCount > 0) {
+        successMessage += ` (${skippedCount} failed)`
+      }
+      success(successMessage)
+    } catch (err) {
+      console.error('Error in bulk make live:', err)
+      error('Failed to make domains live')
+    } finally {
+      setBulkEditLoading(false)
+    }
+  }
+
+  const formatPriceType = (priceType: string) => {
+    const priceTypeMap: Record<string, string> = {
+      asking: 'Set Price',
+      accepting_offers: 'Accepting Offers',
+      starting_bid: 'Auction',
+    }
+    return priceTypeMap[priceType] || priceType
+  }
+
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { bg: string; text: string; label: string }> = {
       pending_approval: { bg: 'bg-orange-100', text: 'text-orange-800', label: 'Pending Review' },
@@ -304,19 +461,51 @@ export default function MyDomainsPage() {
         )}
 
         {domains.length > 0 && (
-          <div className="sticky top-16 z-40 mb-6 bg-white rounded-lg shadow p-3 sm:p-4 space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-              <input
-                type="text"
-                placeholder="Search domains or categories..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="px-3 sm:px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-              />
+          <div className="sticky top-16 z-40 mb-6 bg-white rounded-lg shadow p-4 sm:p-6 space-y-4">
+            {/* Search Bar */}
+            <input
+              type="text"
+              placeholder="Search domains or categories..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+
+            {/* Status Filter Section */}
+            <div className="space-y-3">
+              <label className="block text-sm font-semibold text-gray-900">Status</label>
+              <div className="flex flex-wrap gap-3 items-center">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as any)}
+                  className="px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="live">Live</option>
+                  <option value="approved">Approved</option>
+                  <option value="pending">Pending Review</option>
+                  <option value="rejected">Rejected</option>
+                  <option value="verified">Verified</option>
+                </select>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={showPromotedOnly}
+                    onChange={(e) => setShowPromotedOnly(e.target.checked)}
+                    className="w-4 h-4 rounded border-gray-300"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Promoted Only</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Sort */}
+            <div className="space-y-3">
+              <label className="block text-sm font-semibold text-gray-900">Sort</label>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="px-3 sm:px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
               >
                 <option value="recent">Most Recent</option>
                 <option value="price-high">Price: High to Low</option>
@@ -324,78 +513,50 @@ export default function MyDomainsPage() {
                 <option value="name">Name: A to Z</option>
               </select>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => setStatusFilter('all')}
-                className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition ${
-                  statusFilter === 'all'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                All
-              </button>
-              <button
-                onClick={() => setStatusFilter('live')}
-                className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition ${
-                  statusFilter === 'live'
-                    ? 'bg-green-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                Live
-              </button>
-              <button
-                onClick={() => setStatusFilter('approved')}
-                className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition ${
-                  statusFilter === 'approved'
-                    ? 'bg-green-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                Approved
-              </button>
-              <button
-                onClick={() => setStatusFilter('pending')}
-                className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition ${
-                  statusFilter === 'pending'
-                    ? 'bg-orange-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                Pending Review
-              </button>
-              <button
-                onClick={() => setStatusFilter('rejected')}
-                className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition ${
-                  statusFilter === 'rejected'
-                    ? 'bg-red-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                Rejected
-              </button>
-              <button
-                onClick={() => setStatusFilter('verified')}
-                className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition ${
-                  statusFilter === 'verified'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                Verified
-              </button>
-              <button
-                onClick={() => setShowPromotedOnly(!showPromotedOnly)}
-                className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition ${
-                  showPromotedOnly
-                    ? 'bg-yellow-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                Promoted
-              </button>
+
+            {/* Selection and Bulk Actions */}
+            <div className="border-t border-gray-200 pt-4 space-y-3">
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={selectedDomains.size > 0 && selectedDomains.size === filteredDomains.length}
+                  onChange={selectAllFiltered}
+                  className="w-5 h-5 rounded border-gray-300 cursor-pointer"
+                />
+                <label className="text-sm font-medium text-gray-700 cursor-pointer">
+                  Select All ({filteredDomains.length})
+                </label>
+              </div>
+              {selectedDomains.size > 0 && (
+                <div className="flex items-center justify-between gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <span className="text-sm font-medium text-blue-900">
+                    {selectedDomains.size} selected
+                  </span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setSelectedDomains(new Set())}
+                      className="px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 rounded-lg transition"
+                    >
+                      Clear
+                    </button>
+                    <button
+                      onClick={handleBulkMakeLiveClick}
+                      disabled={bulkEditLoading}
+                      className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition"
+                    >
+                      {bulkEditLoading ? 'Making Live...' : 'Make Live'}
+                    </button>
+                    <button
+                      onClick={() => setBulkEditModal(true)}
+                      className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition"
+                    >
+                      Bulk Edit
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
+
             <p className="text-xs sm:text-sm text-gray-600">
               Showing {filteredDomains.length} of {domains.length} domains
             </p>
@@ -421,8 +582,16 @@ export default function MyDomainsPage() {
             {filteredDomains.map(domain => (
               <div key={domain.id} className="bg-white rounded-lg shadow p-3 sm:p-6 overflow-hidden">
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 sm:gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                  <div className="flex gap-3 flex-1 min-w-0">
+                    <input
+                      type="checkbox"
+                      checked={selectedDomains.has(domain.id)}
+                      onChange={() => toggleDomainSelection(domain.id)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="w-5 h-5 rounded border-gray-300 cursor-pointer mt-1 flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
                       <div className="flex items-center gap-2">
                         {domain.isPromoted && <Zap className="w-5 h-5 text-yellow-500 flex-shrink-0" />}
                         <h3 className="text-base sm:text-lg font-bold text-blue-600 truncate">{domain.domain}</h3>
@@ -437,7 +606,22 @@ export default function MyDomainsPage() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
                       <div>
                         <p className="text-gray-500">Category</p>
-                        <p className="font-medium text-gray-900 truncate">{domain.category}</p>
+                        {(() => {
+                          const categoryConfig = getCategoryConfig(domain.category)
+                          return (
+                            <span 
+                              className="inline-block px-2 py-1 rounded-full text-xs font-medium truncate"
+                              style={{
+                                backgroundColor: categoryConfig.color + '20',
+                                color: categoryConfig.color,
+                                borderColor: categoryConfig.color,
+                                borderWidth: '1px'
+                              }}
+                            >
+                              {domain.category}
+                            </span>
+                          )
+                        })()}
                       </div>
                       <div>
                         <p className="text-gray-500">Price</p>
@@ -445,7 +629,7 @@ export default function MyDomainsPage() {
                       </div>
                       <div>
                         <p className="text-gray-500">Price Type</p>
-                        <p className="font-medium text-gray-900 capitalize truncate">{domain.priceType}</p>
+                        <p className="font-medium text-gray-900 truncate">{formatPriceType(domain.priceType)}</p>
                       </div>
                       <div>
                         <p className="text-gray-500">Listed</p>
@@ -454,9 +638,10 @@ export default function MyDomainsPage() {
                         </p>
                       </div>
                     </div>
-                    {domain.description && (
-                      <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">{domain.description}</p>
-                    )}
+                      {domain.description && (
+                        <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">{domain.description}</p>
+                      )}
+                    </div>
                   </div>
 
                   <div className="flex flex-col gap-2 w-full sm:w-auto">
@@ -745,6 +930,30 @@ export default function MyDomainsPage() {
         isDangerous={true}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteConfirm(null)}
+      />
+
+      {/* Bulk Edit Modal */}
+      {bulkEditModal && (
+        <BulkEditModal
+          selectedDomains={Array.from(selectedDomains).map(id => 
+            domains.find(d => d.id === id)!
+          ).filter(Boolean)}
+          onClose={() => setBulkEditModal(false)}
+          onApply={handleBulkEdit}
+          isLoading={bulkEditLoading}
+        />
+      )}
+
+      {/* Bulk Make Live Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={bulkMakeLiveConfirm.isOpen}
+        title="Make Domains Live"
+        message={bulkMakeLiveConfirm.message}
+        confirmText="Make Live"
+        cancelText="Cancel"
+        isLoading={bulkEditLoading}
+        onConfirm={handleBulkMakeLiveConfirm}
+        onCancel={() => setBulkMakeLiveConfirm({ isOpen: false, message: '' })}
       />
 
       <Footer />
