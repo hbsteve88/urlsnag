@@ -1122,11 +1122,18 @@ export default function EditDomainPage() {
                     <div className="space-y-2">
                       {socialAccounts.map((social, idx) => (
                         <div key={idx} className="flex items-center justify-between bg-blue-100 text-blue-900 px-3 py-2 rounded-lg text-sm">
-                          <span>{social.platform}: {social.url}</span>
+                          <a
+                            href={social.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline cursor-pointer flex-1"
+                          >
+                            {social.platform}: {social.url}
+                          </a>
                           <button
                             type="button"
                             onClick={() => setSocialAccounts(socialAccounts.filter((_, i) => i !== idx))}
-                            className="hover:text-blue-700"
+                            className="hover:text-blue-700 ml-2 flex-shrink-0"
                           >
                             <X className="w-4 h-4" />
                           </button>
