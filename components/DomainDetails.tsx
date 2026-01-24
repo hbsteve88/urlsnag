@@ -1,6 +1,6 @@
 'use client'
 
-import { X, Heart, Share2, Copy, Check } from 'lucide-react'
+import { X, Heart, Share2, Copy, Check, Link2 } from 'lucide-react'
 import { useState } from 'react'
 import { Listing } from '@/lib/generateListings'
 import { useCountdown } from '@/lib/useCountdown'
@@ -220,7 +220,37 @@ export default function DomainDetails({
                 <p className="text-3xl font-bold text-gray-900">
                   ${listing.price.toLocaleString()}
                 </p>
+                {(listing as any).groupName && (
+                  <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+                    <Link2 className="w-3 h-3" />
+                    Part of group: <span className="font-semibold">{(listing as any).groupName}</span>
+                  </p>
+                )}
               </div>
+
+              {/* Group Details Section */}
+              {(listing as any).groupId && (listing as any).groupDomains && (
+                <div className="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Link2 className="w-5 h-5 text-purple-600" />
+                    <h3 className="font-semibold text-purple-900">Domain Group Bundle</h3>
+                  </div>
+                  <p className="text-sm text-purple-800 mb-3">
+                    This domain is sold as part of a bundle. All domains in this group are sold together for one price.
+                  </p>
+                  <div className="space-y-2">
+                    {(listing as any).groupDomains.map((domain: any, idx: number) => (
+                      <div key={idx} className="flex items-center gap-2 p-2 bg-white rounded border border-purple-100">
+                        <Link2 className="w-4 h-4 text-purple-600 flex-shrink-0" />
+                        <span className="text-sm font-medium text-gray-900">{domain}</span>
+                        {domain === listing.domain && (
+                          <span className="ml-auto text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">Current</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Countdown */}
               {listing.endTime && (

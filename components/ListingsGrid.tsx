@@ -1,6 +1,6 @@
 'use client'
 
-import { Heart, MapPin, TrendingUp, Search, Filter, X, ChevronDown, Eye, EyeOff, Zap } from 'lucide-react'
+import { Heart, MapPin, TrendingUp, Search, Filter, X, ChevronDown, Eye, EyeOff, Zap, Link2 } from 'lucide-react'
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { getCategoryConfig, CATEGORIES } from '@/lib/categories'
 import { Listing } from '@/lib/generateListings'
@@ -258,6 +258,7 @@ export default function ListingsGrid({
   const [showQuestionable, setShowQuestionable] = useState(false)
   const [filterTld, setFilterTld] = useState('all')
   const [showSavedOnly, setShowSavedOnly] = useState(false)
+  const [showGroupsOnly, setShowGroupsOnly] = useState(false)
   const [outbidNotifications, setOutbidNotifications] = useState<Array<{ id: string; listing: Listing }>>([])
   const [columnCount, setColumnCount] = useState(4)
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
@@ -334,6 +335,7 @@ export default function ListingsGrid({
       const matchesContent =
         showQuestionable || listing.contentType === 'general'
       const matchesSaved = !showSavedOnly || savedListingsSet.has(listing.id)
+      const matchesGroups = !showGroupsOnly || (listing as any).groupId
 
       // Apply advanced filters
       let matchesAdvanced = true
@@ -345,7 +347,7 @@ export default function ListingsGrid({
         if (advancedFilters.hasVariants && (!listing.variants || listing.variants.length === 0)) matchesAdvanced = false
       }
 
-      return matchesSearch && matchesCategory && matchesTld && matchesContent && matchesAdvanced && matchesSaved
+      return matchesSearch && matchesCategory && matchesTld && matchesContent && matchesAdvanced && matchesSaved && matchesGroups
     })
 
     // Sort
@@ -380,7 +382,7 @@ export default function ListingsGrid({
 
     setDisplayedListings(filtered.slice(0, ITEMS_PER_PAGE * page))
     setPage(1)
-  }, [allListings, searchQuery, filterCategory, filterTld, showQuestionable, sortBy, advancedFilters, showSavedOnly, externalSavedListings, internalSavedListings, ITEMS_PER_PAGE])
+  }, [allListings, searchQuery, filterCategory, filterTld, showQuestionable, sortBy, advancedFilters, showSavedOnly, showGroupsOnly, externalSavedListings, internalSavedListings, ITEMS_PER_PAGE])
 
   // Infinite scroll observer
   useEffect(() => {
@@ -529,6 +531,29 @@ export default function ListingsGrid({
               ) : (
                 <>
                   <Heart className="w-4 h-4" />
+                  All domains
+                </>
+              )}
+            </button>
+
+            {/* Groups Only Filter */}
+            <button
+              onClick={() => setShowGroupsOnly(!showGroupsOnly)}
+              className={`px-4 py-2 rounded-lg font-medium transition flex items-center gap-2 ${
+                showGroupsOnly
+                  ? 'bg-purple-100 text-purple-700 border border-purple-300'
+                  : 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200'
+              }`}
+              title="Show only grouped domains"
+            >
+              {showGroupsOnly ? (
+                <>
+                  <Link2 className="w-4 h-4" />
+                  Groups only
+                </>
+              ) : (
+                <>
+                  <Link2 className="w-4 h-4" />
                   All domains
                 </>
               )}
@@ -940,20 +965,30 @@ function ListingCard({ listing, isSaved, onToggleSave, onSelect }: ListingCardPr
             </div>
           )}
           <div className="flex-1" />
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              onToggleSave()
-            }}
-            className="p-2 hover:bg-gray-100 rounded-full transition"
-            title={isSaved ? 'Remove from saved' : 'Save domain'}
-          >
-            <Heart
-              className={`w-5 h-5 ${
-                isSaved ? 'fill-red-500 text-red-500' : 'text-gray-400'
-              }`}
-            />
-          </button>
+          <div className="flex items-center gap-1">
+            {(listing as any).groupId && (
+              <button
+                className="p-2 hover:bg-gray-100 rounded-full transition"
+                title="Part of a domain group"
+              >
+                <Link2 className="w-5 h-5 text-purple-600" />
+              </button>
+            )}
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onToggleSave()
+              }}
+              className="p-2 hover:bg-gray-100 rounded-full transition"
+              title={isSaved ? 'Remove from saved' : 'Save domain'}
+            >
+              <Heart
+                className={`w-5 h-5 ${
+                  isSaved ? 'fill-red-500 text-red-500' : 'text-gray-400'
+                }`}
+              />
+            </button>
+          </div>
         </div>
       </div>
     </div>
