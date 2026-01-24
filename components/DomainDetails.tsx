@@ -68,6 +68,8 @@ export default function DomainDetails({
   }
 
   const handleSubmitOffer = () => {
+    console.log('handleSubmitOffer called', { user, offerAmount, agreedToTerms })
+    
     if (!user) {
       error('Please sign in to make an offer')
       return
@@ -83,6 +85,7 @@ export default function DomainDetails({
       return
     }
 
+    console.log('All validations passed, showing confirmation modal')
     // Show confirmation modal instead of submitting immediately
     setShowOfferConfirmation(true)
   }
@@ -764,7 +767,8 @@ export default function DomainDetails({
                   <button
                     onClick={handleSubmitOffer}
                     disabled={submittingOffer || !agreedToTerms || !offerAmount}
-                    className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition font-medium flex items-center justify-center gap-2"
+                    title={!offerAmount ? 'Please enter an offer amount' : !agreedToTerms ? 'Please agree to the terms' : ''}
+                    className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition font-medium flex items-center justify-center gap-2"
                   >
                     {submittingOffer && <Loader className="w-4 h-4 animate-spin" />}
                     {submittingOffer ? 'Submitting...' : 'Submit Offer'}
