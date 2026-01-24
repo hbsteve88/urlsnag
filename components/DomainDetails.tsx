@@ -256,6 +256,41 @@ export default function DomainDetails({
                   </div>
                 </div>
               </div>
+
+              {/* Social Media */}
+              {listing.socialMedia && listing.socialMedia.length > 0 && (
+                <div className="mt-6">
+                  <h3 className="font-semibold text-gray-900 mb-4">Social Media Accounts</h3>
+                  <div className="space-y-3">
+                    {listing.socialMedia.map((social, idx) => {
+                      const platformEmojis: Record<string, string> = {
+                        twitter: '𝕏',
+                        instagram: '📷',
+                        facebook: '👥',
+                        tiktok: '🎵',
+                        youtube: '▶️',
+                        linkedin: '💼'
+                      }
+                      
+                      return (
+                        <a
+                          key={idx}
+                          href={social.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition"
+                        >
+                          <span className="text-xl">{platformEmojis[social.platform]}</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-gray-900 capitalize text-sm">{social.platform}</p>
+                            {(social as any).handle && <p className="text-xs text-gray-600 truncate">{(social as any).handle}</p>}
+                          </div>
+                        </a>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Right Column - Details */}
@@ -303,13 +338,21 @@ export default function DomainDetails({
                   </p>
                   <div className="space-y-2">
                     {groupDomains.map((domain: string, idx: number) => (
-                      <div key={idx} className="flex items-center gap-2 p-2 bg-white rounded border border-purple-100">
+                      <button
+                        key={idx}
+                        onClick={() => {
+                          onClose()
+                          // Trigger domain detail view for this domain
+                          window.dispatchEvent(new CustomEvent('viewDomain', { detail: { domain } }))
+                        }}
+                        className="w-full flex items-center gap-2 p-2 bg-white rounded border border-purple-100 hover:border-purple-300 hover:bg-purple-50 transition text-left"
+                      >
                         <Link2 className="w-4 h-4 text-purple-600 flex-shrink-0" />
-                        <span className="text-sm font-medium text-gray-900">{domain}</span>
+                        <span className="text-sm font-medium text-gray-900 hover:text-purple-600">{domain}</span>
                         {domain === listing.domain && (
                           <span className="ml-auto text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">Current</span>
                         )}
-                      </div>
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -332,48 +375,13 @@ export default function DomainDetails({
               )}
 
               {/* Description */}
+              {listing.description && listing.description.trim() && (
               <div className="mb-6">
                 <h3 className="font-semibold text-gray-900 mb-2">Description</h3>
                 <p className="text-gray-700">{listing.description}</p>
               </div>
-
-              {/* Social Media */}
-              {listing.socialMedia && listing.socialMedia.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="font-semibold text-gray-900 mb-4">Social Media Accounts</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {listing.socialMedia.map((social, idx) => {
-                      const platformEmojis: Record<string, string> = {
-                        twitter: '𝕏',
-                        instagram: '📷',
-                        facebook: '👥',
-                        tiktok: '🎵',
-                        youtube: '▶️',
-                        linkedin: '💼'
-                      }
-                      
-                      return (
-                        <a
-                          key={idx}
-                          href={social.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-4 border border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition"
-                        >
-                          <div className="flex items-center gap-3">
-                            <span className="text-2xl">{platformEmojis[social.platform]}</span>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-gray-900 capitalize text-sm">{social.platform}</p>
-                              {(social as any).handle && <p className="text-xs text-gray-600 truncate">{(social as any).handle}</p>}
-                              {(social as any).followers && <p className="text-xs text-gray-500 mt-1">{(social as any).followers.toLocaleString()} followers</p>}
-                            </div>
-                          </div>
-                        </a>
-                      )
-                    })}
-                  </div>
-                </div>
               )}
+
             </div>
           </div>
 
