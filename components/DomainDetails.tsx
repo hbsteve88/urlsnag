@@ -378,6 +378,34 @@ export default function DomainDetails({
                 )}
               </div>
 
+              {/* Seller Notice - Based on Listing Type */}
+              <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                {listing.priceType === 'asking' && (
+                  <>
+                    <p className="text-sm font-semibold text-blue-900 mb-2">Fixed-Price Sale</p>
+                    <p className="text-sm text-blue-800">
+                      By listing this domain at a fixed price, the seller indicates intent to sell to the first buyer who completes payment at the listed price. No obligation to transfer ownership exists until payment has been successfully received through the approved payment or escrow process.
+                    </p>
+                  </>
+                )}
+                {listing.priceType === 'accepting_offers' && (
+                  <>
+                    <p className="text-sm font-semibold text-blue-900 mb-2">Negotiated Offers</p>
+                    <p className="text-sm text-blue-800">
+                      The seller allows buyers to submit purchase proposals for review. Accepting an offer indicates intent to sell at the agreed price, subject to the buyer completing payment within the required timeframe. The agreement becomes binding only after payment or escrow funding has been confirmed.
+                    </p>
+                  </>
+                )}
+                {listing.priceType === 'starting_bid' && (
+                  <>
+                    <p className="text-sm font-semibold text-blue-900 mb-2">Auction Listing</p>
+                    <p className="text-sm text-blue-800">
+                      The seller agrees to sell the domain to the winning bidder if the auction concludes with a valid bid that meets any stated reserve requirements. The sale becomes binding only after the winning bidder completes payment within the required timeframe.
+                    </p>
+                  </>
+                )}
+              </div>
+
               {/* Group Details Section */}
               {(listing as any).groupId && groupDomains.length > 0 && (
                 <div className="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
@@ -559,11 +587,14 @@ export default function DomainDetails({
                     <p className="text-xl font-bold text-blue-900">{listing.domain}</p>
                   </div>
 
-                  {/* Legal Binding Contract Warning */}
-                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-sm font-semibold text-red-900 mb-2">⚠️ Legal Binding Contract</p>
-                    <p className="text-sm text-red-800">
-                      By submitting an offer, you are entering into a legally binding contract. This offer constitutes a formal proposal to purchase the domain name at the specified price. If accepted by the seller, both parties are obligated to complete the transaction according to the terms of this agreement. Please ensure you are authorized to make this offer and understand the legal implications before proceeding.
+                  {/* Offer Submission Notice */}
+                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                    <p className="text-sm font-semibold text-amber-900 mb-2">⚠️ Offer Submission Notice</p>
+                    <p className="text-sm text-amber-800 space-y-2">
+                      <span className="block">By submitting an offer, you are making a serious, good-faith proposal to purchase this domain name at the price you specify.</span>
+                      <span className="block">If the seller accepts your offer, you agree to complete payment through the approved payment or escrow process within the required timeframe. The transaction becomes binding only once payment has been successfully secured.</span>
+                      <span className="block">No transfer of ownership will occur until payment is received. Failure to complete payment after acceptance may result in cancellation of the offer, account limitations, or other actions as outlined in our Terms of Service.</span>
+                      <span className="block">Please ensure you are authorized to submit this offer and understand the obligations involved before proceeding.</span>
                     </p>
                   </div>
 
@@ -602,9 +633,9 @@ export default function DomainDetails({
                       className="w-5 h-5 rounded border-gray-300 mt-0.5 flex-shrink-0"
                     />
                     <div>
-                      <p className="text-sm font-medium text-gray-900">I understand and agree to the terms</p>
+                      <p className="text-sm font-medium text-gray-900">I understand and agree to the offer terms</p>
                       <p className="text-xs text-gray-600 mt-1">
-                        I confirm that I have read and understand the legal binding contract notice above. I understand that submitting this offer creates a legally binding obligation to purchase the domain if the seller accepts my offer.
+                        I confirm that I have read and understand the offer submission notice above. I understand that if the seller accepts my offer, I am obligated to complete payment within the required timeframe, and the transaction becomes binding only once payment is secured.
                       </p>
                     </div>
                   </label>
