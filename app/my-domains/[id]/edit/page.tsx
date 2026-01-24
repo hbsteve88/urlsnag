@@ -506,7 +506,14 @@ export default function EditDomainPage() {
           priceData.hideReservePrice = updateData.hideReservePrice
         }
 
-        await syncPriceToGroup(priceData)
+        // Only sync if we have valid price data (not 0)
+        const hasValidPrice = priceMode === 'set' ? updateData.price > 0 : 
+                             priceMode === 'accepting' ? updateData.minimumOfferPrice > 0 :
+                             updateData.startingBid > 0 && updateData.reservePrice > 0
+
+        if (hasValidPrice) {
+          await syncPriceToGroup(priceData)
+        }
       }
 
       success('Domain updated successfully!')
