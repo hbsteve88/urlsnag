@@ -687,6 +687,16 @@ export default function DomainDetails({
                   {/* Offer Amount and Currency */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-900 mb-2">Offer Amount</label>
+                    <style>{`
+                      input[type="number"]::-webkit-outer-spin-button,
+                      input[type="number"]::-webkit-inner-spin-button {
+                        -webkit-appearance: none;
+                        margin: 0;
+                      }
+                      input[type="number"] {
+                        -moz-appearance: textfield;
+                      }
+                    `}</style>
                     <div className="flex gap-3">
                       <input
                         type="number"
@@ -696,10 +706,6 @@ export default function DomainDetails({
                         className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                         min="0"
                         step="0.01"
-                        style={{
-                          WebkitAppearance: 'none',
-                          MozAppearance: 'textfield',
-                        } as React.CSSProperties}
                       />
                       <select
                         value={offerCurrency}
