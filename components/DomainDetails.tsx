@@ -4,10 +4,11 @@ import { X, Heart, Share2, Copy, Check, Link2, Loader } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { Listing } from '@/lib/generateListings'
 import { useCountdown } from '@/lib/useCountdown'
-import { collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore'
+import { collection, query, where, getDocs, addDoc, serverTimestamp, updateDoc, doc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useAuth } from './AuthContext'
 import { useToast } from './ToastContext'
+import { PaymentFlow, PaymentDetails } from './PaymentFlow'
 
 interface DomainDetailsProps {
   listing: Listing
@@ -33,6 +34,7 @@ export default function DomainDetails({
   const [groupDomains, setGroupDomains] = useState<string[]>([])
   const [showOfferModal, setShowOfferModal] = useState(false)
   const [showOfferConfirmation, setShowOfferConfirmation] = useState(false)
+  const [showPaymentFlow, setShowPaymentFlow] = useState(false)
   const [offerAmount, setOfferAmount] = useState('')
   const [offerCurrency, setOfferCurrency] = useState('USD')
   const [offerMessage, setOfferMessage] = useState('')
@@ -96,9 +98,20 @@ export default function DomainDetails({
       return
     }
 
-    setSubmittingOffer(true)
+    // Show payment flow instead of immediately submitting
+    setShowOfferConfirmation(false)
+    setShowPaymentFlow(true)
+  }
+
+  const handlePaymentComplete = async (paymentDetails: PaymentDetails) => {
+    if (!user) {
+      error('Please sign in to make an offer')
+      return
+    }
+
     try {
-      await addDoc(collection(db, 'offers'), {
+      // Create offer document with payment details
+      const offerRef = await addDoc(collection(db, 'offers'), {
         listingId: listing.id,
         domain: listing.domain,
         buyerId: user.uid,
@@ -106,22 +119,31 @@ export default function DomainDetails({
         offerAmount: parseFloat(offerAmount),
         offerCurrency: offerCurrency,
         message: offerMessage,
-        status: 'pending',
+        status: 'pending_payment',
+        paymentDetails: {
+          salePrice: paymentDetails.salePrice,
+          platformFee: paymentDetails.platformFee,
+          transferFee: paymentDetails.transferFee,
+          ccFee: paymentDetails.ccFee,
+          buyerTotal: paymentDetails.buyerTotal,
+          sellerPayout: paymentDetails.sellerPayout,
+          currency: paymentDetails.currency,
+        },
         createdAt: serverTimestamp(),
       })
 
-      success('Offer submitted successfully! The seller will review your offer.')
+      success('Payment processed! Offer submitted successfully.')
       setShowOfferModal(false)
       setShowOfferConfirmation(false)
+      setShowPaymentFlow(false)
       setOfferAmount('')
       setOfferMessage('')
       setOfferCurrency('USD')
       setAgreedToTerms(false)
     } catch (err) {
-      console.error('Error submitting offer:', err)
-      error('Failed to submit offer. Please try again.')
-    } finally {
-      setSubmittingOffer(false)
+      console.error('Error processing payment:', err)
+      error('Failed to process payment. Please try again.')
+      throw err
     }
   }
 
@@ -776,6 +798,17 @@ export default function DomainDetails({
                 </div>
               </div>
             </div>
+          )}
+
+          {/* Payment Flow */}
+          {showPaymentFlow && (
+            <PaymentFlow
+              listing={listing}
+              offerAmount={parseFloat(offerAmount)}
+              offerCurrency={offerCurrency}
+              onClose={() => setShowPaymentFlow(false)}
+              onConfirm={handlePaymentComplete}
+            />
           )}
         </div>
       </div>
