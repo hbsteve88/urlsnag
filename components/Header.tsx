@@ -77,7 +77,7 @@ export default function Header({
           )}
 
           <nav className="hidden lg:flex items-center gap-3">
-            <button onClick={handleLogoClick} className="px-4 py-2 border border-gray-300 text-gray-900 rounded-lg hover:bg-gray-50 transition font-medium">
+            <button onClick={handleLogoClick} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
               Browse
             </button>
             <Link href="/sell" className="px-4 py-2 bg-[#7299CB] text-white rounded-lg hover:bg-[#5a7aaa] transition font-medium">
@@ -87,9 +87,6 @@ export default function Header({
               <>
                 <Link href="/my-domains" className="px-4 py-2 border border-gray-300 text-gray-900 rounded-lg hover:bg-gray-50 transition font-medium">
                   My Domains
-                </Link>
-                <Link href="/my-offers" className="px-4 py-2 border border-gray-300 text-gray-900 rounded-lg hover:bg-gray-50 transition font-medium">
-                  My Offers
                 </Link>
                 <Link href="/settings" className="flex items-center gap-2 px-4 py-2 rounded-lg transition font-medium" style={{ backgroundColor: '#EFF6FF', color: '#1F2937', border: '1px solid #D1E0F5' }}>
                   <Settings className="w-4 h-4" />
@@ -164,12 +161,6 @@ export default function Header({
                   className="block px-4 py-2 border border-gray-300 text-gray-900 hover:bg-gray-50 rounded-lg font-medium"
                 >
                   My Domains
-                </Link>
-                <Link
-                  href="/my-offers"
-                  className="block px-4 py-2 border border-gray-300 text-gray-900 hover:bg-gray-50 rounded-lg font-medium"
-                >
-                  My Offers
                 </Link>
                 <Link
                   href="/settings"
