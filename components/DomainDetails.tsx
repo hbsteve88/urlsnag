@@ -324,8 +324,8 @@ export default function DomainDetails({
                             <span className="text-2xl">{platformEmojis[social.platform]}</span>
                             <div className="flex-1 min-w-0">
                               <p className="font-semibold text-gray-900 capitalize text-sm">{social.platform}</p>
-                              <p className="text-xs text-gray-600 truncate">{social.handle}</p>
-                              <p className="text-xs text-gray-500 mt-1">{social.followers.toLocaleString()} followers</p>
+                              {(social as any).handle && <p className="text-xs text-gray-600 truncate">{(social as any).handle}</p>}
+                              {(social as any).followers && <p className="text-xs text-gray-500 mt-1">{(social as any).followers.toLocaleString()} followers</p>}
                             </div>
                           </div>
                         </a>

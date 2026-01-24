@@ -13,6 +13,18 @@ import { AlertCircle, Loader, Upload, X, ChevronDown, Link2, Trash2 } from 'luci
 import { CATEGORIES, suggestCategory } from '@/lib/categories'
 import { collection, query, where, getDocs } from 'firebase/firestore'
 
+// Hide number input spinners
+const hideNumberSpinnersStyle = `
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+`
+
 interface DomainListing {
   id: string
   domain: string
@@ -568,6 +580,7 @@ export default function EditDomainPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <style>{hideNumberSpinnersStyle}</style>
       <Header searchQuery="" onSearchChange={() => {}} showSearchBar={false} />
 
       <main className="w-full max-w-2xl mx-auto px-3 sm:px-4 py-8 sm:py-12">
