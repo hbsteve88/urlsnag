@@ -93,6 +93,13 @@ export default function EditDomainPage() {
   const [groupDomains, setGroupDomains] = useState<string[]>([])
   const [showRemoveGroupConfirm, setShowRemoveGroupConfirm] = useState(false)
   const [domainToRemoveFromGroup, setDomainToRemoveFromGroup] = useState<string | null>(null)
+  const [assetsToShare, setAssetsToShare] = useState({
+    website: false,
+    logo: false,
+    businessAssets: false,
+    socialAccounts: false,
+  })
+  const [showShareAssetsConfirm, setShowShareAssetsConfirm] = useState(false)
   const debounceTimer = useRef<NodeJS.Timeout | null>(null)
 
 
@@ -310,6 +317,71 @@ export default function EditDomainPage() {
       }
     } catch (err) {
       console.error('Error syncing price to group:', err)
+    }
+  }
+
+  const handleShareAssetsToGroup = async () => {
+    if (!domain?.groupId || groupDomains.length === 0) return
+
+    setSaving(true)
+    try {
+      const assetsData: any = {}
+
+      if (assetsToShare.website) {
+        assetsData.hasWebsite = hasWebsite
+        assetsData.website = formData.website || null
+        assetsData.hasWebsiteAdultContent = hasWebsiteAdultContent
+      }
+
+      if (assetsToShare.logo && listingImageFile) {
+        const timestamp = Date.now()
+        const storageRef = ref(storage, `listings/${domainId}/images/${timestamp}_${listingImageFile.name}`)
+        await uploadBytes(storageRef, listingImageFile)
+        const logoUrl = await getDownloadURL(storageRef)
+        assetsData.hasLogo = hasLogo
+        assetsData.logo = logoUrl
+        assetsData.thumbnail = logoUrl
+      } else if (assetsToShare.logo && listingImagePreview) {
+        assetsData.hasLogo = hasLogo
+        assetsData.logo = listingImagePreview
+        assetsData.thumbnail = listingImagePreview
+      }
+
+      if (assetsToShare.businessAssets) {
+        assetsData.hasBusinessAssets = hasBusinessAssets
+        assetsData.businessName = formData.businessName || null
+        assetsData.businessDescription = formData.businessDescription || null
+        assetsData.businessAssets = businessAssets
+      }
+
+      if (assetsToShare.socialAccounts) {
+        assetsData.hasSocialAccounts = hasSocialAccounts
+        assetsData.socialMedia = socialAccounts
+      }
+
+      // Share assets to all other domains in the group
+      for (const groupDomain of groupDomains) {
+        if (groupDomain !== domain.domain) {
+          const q = query(
+            collection(db, 'listings'),
+            where('groupId', '==', domain.groupId),
+            where('domain', '==', groupDomain)
+          )
+          const snapshot = await getDocs(q)
+          if (snapshot.docs.length > 0) {
+            await updateDoc(doc(db, 'listings', snapshot.docs[0].id), assetsData)
+          }
+        }
+      }
+
+      setShowShareAssetsConfirm(false)
+      setAssetsToShare({ website: false, logo: false, businessAssets: false, socialAccounts: false })
+      success('Assets shared to all domains in group')
+    } catch (err) {
+      console.error('Error sharing assets to group:', err)
+      error('Failed to share assets to group')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -575,6 +647,57 @@ export default function EditDomainPage() {
                     </div>
                   ))}
                 </div>
+              </div>
+
+              {/* Share Assets to Group */}
+              <div className="mb-4 p-3 bg-blue-50 rounded border border-blue-200">
+                <p className="text-xs font-semibold text-blue-900 mb-3">Share Optional Assets to All Domains in Group:</p>
+                <div className="space-y-2 mb-3">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={assetsToShare.website}
+                      onChange={(e) => setAssetsToShare({ ...assetsToShare, website: e.target.checked })}
+                      className="w-4 h-4 rounded border-gray-300"
+                    />
+                    <span className="text-sm text-blue-900">Website {hasWebsite ? '✓' : '(not added)'}</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={assetsToShare.logo}
+                      onChange={(e) => setAssetsToShare({ ...assetsToShare, logo: e.target.checked })}
+                      className="w-4 h-4 rounded border-gray-300"
+                    />
+                    <span className="text-sm text-blue-900">Logo {hasLogo ? '✓' : '(not added)'}</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={assetsToShare.businessAssets}
+                      onChange={(e) => setAssetsToShare({ ...assetsToShare, businessAssets: e.target.checked })}
+                      className="w-4 h-4 rounded border-gray-300"
+                    />
+                    <span className="text-sm text-blue-900">Business Assets {hasBusinessAssets ? '✓' : '(not added)'}</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={assetsToShare.socialAccounts}
+                      onChange={(e) => setAssetsToShare({ ...assetsToShare, socialAccounts: e.target.checked })}
+                      className="w-4 h-4 rounded border-gray-300"
+                    />
+                    <span className="text-sm text-blue-900">Social Media Accounts {hasSocialAccounts ? '✓' : '(not added)'}</span>
+                  </label>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowShareAssetsConfirm(true)}
+                  disabled={!Object.values(assetsToShare).some(v => v)}
+                  className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition font-medium text-sm"
+                >
+                  Share Selected Assets
+                </button>
               </div>
             </div>
           )}
@@ -1299,6 +1422,42 @@ export default function EditDomainPage() {
                 >
                   {saving && <Loader className="w-4 h-4 animate-spin" />}
                   {saving ? 'Removing...' : 'Remove'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Share Assets to Group Confirmation Modal */}
+        {showShareAssetsConfirm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">Share Assets to Group?</h2>
+              <p className="text-sm text-gray-700 mb-4">
+                The following assets will be shared to all {groupDomains.length - 1} other domain{groupDomains.length !== 2 ? 's' : ''} in this group:
+              </p>
+              <ul className="text-sm text-gray-700 mb-6 space-y-1 ml-4">
+                {assetsToShare.website && <li>• Website</li>}
+                {assetsToShare.logo && <li>• Logo</li>}
+                {assetsToShare.businessAssets && <li>• Business Assets</li>}
+                {assetsToShare.socialAccounts && <li>• Social Media Accounts</li>}
+              </ul>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowShareAssetsConfirm(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleShareAssetsToGroup}
+                  disabled={saving}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition font-medium flex items-center justify-center gap-2"
+                >
+                  {saving && <Loader className="w-4 h-4 animate-spin" />}
+                  {saving ? 'Sharing...' : 'Share'}
                 </button>
               </div>
             </div>
