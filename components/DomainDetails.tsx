@@ -1,9 +1,11 @@
 'use client'
 
 import { X, Heart, Share2, Copy, Check, Link2 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Listing } from '@/lib/generateListings'
 import { useCountdown } from '@/lib/useCountdown'
+import { collection, query, where, getDocs } from 'firebase/firestore'
+import { db } from '@/lib/firebase'
 
 interface DomainDetailsProps {
   listing: Listing
@@ -24,6 +26,27 @@ export default function DomainDetails({
   const [activeTab, setActiveTab] = useState<'overview' | 'assets' | 'variants'>('overview')
   const [showShareMenu, setShowShareMenu] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [groupDomains, setGroupDomains] = useState<string[]>([])
+
+  // Fetch group domains if this listing is part of a group
+  useEffect(() => {
+    const fetchGroupDomains = async () => {
+      if ((listing as any).groupId) {
+        try {
+          const q = query(
+            collection(db, 'listings'),
+            where('groupId', '==', (listing as any).groupId)
+          )
+          const snapshot = await getDocs(q)
+          const domains = snapshot.docs.map(doc => doc.data().domain).sort()
+          setGroupDomains(domains)
+        } catch (err) {
+          console.error('Error fetching group domains:', err)
+        }
+      }
+    }
+    fetchGroupDomains()
+  }, [(listing as any).groupId])
 
   const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/domain/${listing.id}` : ''
 
@@ -229,7 +252,7 @@ export default function DomainDetails({
               </div>
 
               {/* Group Details Section */}
-              {(listing as any).groupId && (listing as any).groupDomains && (
+              {(listing as any).groupId && groupDomains.length > 0 && (
                 <div className="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
                   <div className="flex items-center gap-2 mb-3">
                     <Link2 className="w-5 h-5 text-purple-600" />
@@ -239,7 +262,7 @@ export default function DomainDetails({
                     This domain is sold as part of a bundle. All domains in this group are sold together for one price.
                   </p>
                   <div className="space-y-2">
-                    {(listing as any).groupDomains.map((domain: any, idx: number) => (
+                    {groupDomains.map((domain: string, idx: number) => (
                       <div key={idx} className="flex items-center gap-2 p-2 bg-white rounded border border-purple-100">
                         <Link2 className="w-4 h-4 text-purple-600 flex-shrink-0" />
                         <span className="text-sm font-medium text-gray-900">{domain}</span>
