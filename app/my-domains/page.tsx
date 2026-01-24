@@ -12,7 +12,7 @@ import PromotionCheckoutModal from '@/components/PromotionCheckoutModal'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import BulkEditModal, { BulkEditUpdates } from '@/components/BulkEditModal'
 import ConfirmationModal from '@/components/ConfirmationModal'
-import { Edit, Trash2, AlertCircle, Loader, Eye, X, Zap } from 'lucide-react'
+import { Edit, Trash2, AlertCircle, Loader, Eye, X, Zap, ChevronUp, ChevronDown } from 'lucide-react'
 import { PROMOTION_PACKAGES } from '@/lib/promotionConfig'
 import { logPromotionView } from '@/lib/promotionAnalytics'
 import { getCategoryConfig } from '@/lib/categories'
@@ -77,6 +77,7 @@ export default function MyDomainsPage() {
     isOpen: false,
     message: '',
   })
+  const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false)
 
   useEffect(() => {
     if (authLoading) return
@@ -461,32 +462,63 @@ export default function MyDomainsPage() {
         )}
 
         {domains.length > 0 && (
-          <div className="sticky top-16 z-40 mb-6 bg-white rounded-lg shadow p-4 sm:p-6 space-y-4">
-            {/* Search Bar */}
-            <input
-              type="text"
-              placeholder="Search domains or categories..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
+          <div className="sticky top-16 z-40 mb-6 bg-white rounded-lg shadow transition-all duration-200">
+            {/* Header with Collapse Toggle */}
+            <div className="p-3 sm:p-4 border-b border-gray-200 flex items-center justify-between">
+              <div className="flex-1">
+                <input
+                  type="text"
+                  placeholder="Search domains or categories..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+              </div>
+              <button
+                onClick={() => setIsHeaderCollapsed(!isHeaderCollapsed)}
+                className="ml-3 p-2 hover:bg-gray-100 rounded-lg transition"
+                title={isHeaderCollapsed ? "Expand filters" : "Collapse filters"}
+              >
+                {isHeaderCollapsed ? <ChevronDown className="w-5 h-5" /> : <ChevronUp className="w-5 h-5" />}
+              </button>
+            </div>
 
-            {/* Status Filter Section */}
-            <div className="space-y-3">
-              <label className="block text-sm font-semibold text-gray-900">Status</label>
-              <div className="flex flex-wrap gap-3 items-center">
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as any)}
-                  className="px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
-                >
-                  <option value="all">All Statuses</option>
-                  <option value="live">Live</option>
-                  <option value="approved">Approved</option>
-                  <option value="pending">Pending Review</option>
-                  <option value="rejected">Rejected</option>
-                  <option value="verified">Verified</option>
-                </select>
+            {/* Collapsible Content */}
+            {!isHeaderCollapsed && (
+              <div className="p-3 sm:p-4 space-y-3">
+                {/* Status and Sort in one row */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Status</label>
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value as any)}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+                    >
+                      <option value="all">All Statuses</option>
+                      <option value="live">Live</option>
+                      <option value="approved">Approved</option>
+                      <option value="pending">Pending Review</option>
+                      <option value="rejected">Rejected</option>
+                      <option value="verified">Verified</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Sort</label>
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value as any)}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+                    >
+                      <option value="recent">Most Recent</option>
+                      <option value="price-high">Price: High to Low</option>
+                      <option value="price-low">Price: Low to High</option>
+                      <option value="name">Name: A to Z</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Promoted Checkbox */}
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
@@ -496,70 +528,55 @@ export default function MyDomainsPage() {
                   />
                   <span className="text-sm font-medium text-gray-700">Promoted Only</span>
                 </label>
-              </div>
-            </div>
 
-            {/* Sort */}
-            <div className="space-y-3">
-              <label className="block text-sm font-semibold text-gray-900">Sort</label>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
-              >
-                <option value="recent">Most Recent</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="name">Name: A to Z</option>
-              </select>
-            </div>
-
-            {/* Selection and Bulk Actions */}
-            <div className="border-t border-gray-200 pt-4 space-y-3">
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  checked={selectedDomains.size > 0 && selectedDomains.size === filteredDomains.length}
-                  onChange={selectAllFiltered}
-                  className="w-5 h-5 rounded border-gray-300 cursor-pointer"
-                />
-                <label className="text-sm font-medium text-gray-700 cursor-pointer">
-                  Select All ({filteredDomains.length})
-                </label>
-              </div>
-              {selectedDomains.size > 0 && (
-                <div className="flex items-center justify-between gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <span className="text-sm font-medium text-blue-900">
-                    {selectedDomains.size} selected
-                  </span>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setSelectedDomains(new Set())}
-                      className="px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 rounded-lg transition"
-                    >
-                      Clear
-                    </button>
-                    <button
-                      onClick={handleBulkMakeLiveClick}
-                      disabled={bulkEditLoading}
-                      className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition"
-                    >
-                      {bulkEditLoading ? 'Making Live...' : 'Make Live'}
-                    </button>
-                    <button
-                      onClick={() => setBulkEditModal(true)}
-                      className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition"
-                    >
-                      Bulk Edit
-                    </button>
+                {/* Selection and Bulk Actions */}
+                <div className="border-t border-gray-200 pt-3 space-y-2">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedDomains.size > 0 && selectedDomains.size === filteredDomains.length}
+                      onChange={selectAllFiltered}
+                      className="w-5 h-5 rounded border-gray-300 cursor-pointer"
+                    />
+                    <label className="text-sm font-medium text-gray-700 cursor-pointer">
+                      Select All ({filteredDomains.length})
+                    </label>
                   </div>
+                  {selectedDomains.size > 0 && (
+                    <div className="flex items-center justify-between gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <span className="text-sm font-medium text-blue-900">
+                        {selectedDomains.size} selected
+                      </span>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setSelectedDomains(new Set())}
+                          className="px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 rounded-lg transition"
+                        >
+                          Clear
+                        </button>
+                        <button
+                          onClick={handleBulkMakeLiveClick}
+                          disabled={bulkEditLoading}
+                          className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition"
+                        >
+                          {bulkEditLoading ? 'Making Live...' : 'Make Live'}
+                        </button>
+                        <button
+                          onClick={() => setBulkEditModal(true)}
+                          className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition"
+                        >
+                          Bulk Edit
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            <p className="text-xs sm:text-sm text-gray-600">
-              Showing {filteredDomains.length} of {domains.length} domains
-            </p>
+                <p className="text-xs sm:text-sm text-gray-600">
+                  Showing {filteredDomains.length} of {domains.length} domains
+                </p>
+              </div>
+            )}
           </div>
         )}
 

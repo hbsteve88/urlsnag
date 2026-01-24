@@ -874,17 +874,6 @@ function ListingCard({ listing, isSaved, onToggleSave, onSelect }: ListingCardPr
         >
           {listing.domain}
         </button>
-
-        {/* Logo Overlay (positioned absolutely below button) */}
-        {listing.logo && (
-          <div className="absolute top-full right-4 mt-2 w-20 h-20 border-4 border-gray-200 overflow-hidden shadow-lg bg-white rounded">
-            <img
-              src={listing.logo}
-              alt="Logo"
-              className="w-full h-full object-cover"
-            />
-          </div>
-        )}
       </div>
 
       <div className="p-4 flex flex-col flex-grow relative">

@@ -77,6 +77,9 @@ export default function Header({
           )}
 
           <nav className="hidden lg:flex items-center gap-3">
+            <button onClick={handleLogoClick} className="px-4 py-2 border border-gray-300 text-gray-900 rounded-lg hover:bg-gray-50 transition font-medium">
+              Browse
+            </button>
             <Link href="/sell" className="px-4 py-2 bg-[#7299CB] text-white rounded-lg hover:bg-[#5a7aaa] transition font-medium">
               Sell
             </Link>
@@ -142,6 +145,12 @@ export default function Header({
                 />
               </div>
             )}
+            <button
+              onClick={handleLogoClick}
+              className="block w-full px-4 py-2 border border-gray-300 text-gray-900 hover:bg-gray-50 rounded-lg font-medium text-left"
+            >
+              Browse
+            </button>
             <Link
               href="/sell"
               className="block px-4 py-2 bg-[#7299CB] text-white hover:bg-[#5a7aaa] rounded-lg font-medium"
