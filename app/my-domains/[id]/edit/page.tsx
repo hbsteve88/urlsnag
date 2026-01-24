@@ -448,19 +448,20 @@ export default function EditDomainPage() {
     try {
       const updateData: any = {
         category: formData.category,
-        price: parseInt(formData.price) || 0,
         description: formData.description,
         priceType: priceMode === 'set' ? 'asking' : priceMode === 'accepting' ? 'accepting_offers' : 'starting_bid',
       }
 
-      if (priceMode === 'accepting') {
+      if (priceMode === 'set') {
+        updateData.price = parseInt(formData.price) || 0
+      } else if (priceMode === 'accepting') {
         updateData.minimumOfferPrice = parseInt(formData.minimumOfferPrice) || 0
+        updateData.price = updateData.minimumOfferPrice
         updateData.hideMinimumOffer = hideMinimumOffer
-      }
-
-      if (priceMode === 'auction') {
+      } else if (priceMode === 'auction') {
         updateData.startingBid = parseInt(formData.startingBid) || 0
         updateData.reservePrice = parseInt(formData.reservePrice) || 0
+        updateData.price = updateData.startingBid
         updateData.hideReservePrice = hideReservePrice
       }
 
