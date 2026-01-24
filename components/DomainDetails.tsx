@@ -23,7 +23,7 @@ export default function DomainDetails({
   onViewSellerDomains,
 }: DomainDetailsProps) {
   const countdown = useCountdown(listing.endTime)
-  const [activeTab, setActiveTab] = useState<'overview' | 'assets' | 'variants'>('overview')
+  const [activeTab, setActiveTab] = useState<'assets' | 'variants'>((listing.businessAssets && listing.businessAssets.length > 0) ? 'assets' : 'variants')
   const [showShareMenu, setShowShareMenu] = useState(false)
   const [copied, setCopied] = useState(false)
   const [groupDomains, setGroupDomains] = useState<string[]>([])
@@ -239,16 +239,27 @@ export default function DomainDetails({
             <div className="md:col-span-2">
               {/* Price Section */}
               <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-600 mb-1">{getPriceTypeLabel(listing.priceType)}</p>
-                {!(listing as any).hideMinimumOffer && !(listing as any).hideReservePrice ? (
-                  <p className="text-3xl font-bold text-gray-900">
-                    ${listing.price.toLocaleString()}
-                  </p>
-                ) : (
-                  <p className="text-3xl font-bold text-gray-400">
-                    Price hidden
-                  </p>
-                )}
+                <div className="flex items-start justify-between">
+                  <div>
+                    {!(listing as any).hideMinimumOffer && !(listing as any).hideReservePrice ? (
+                      <>
+                        <p className="text-sm text-gray-600 mb-1">{getPriceTypeLabel(listing.priceType)}</p>
+                        <p className="text-3xl font-bold text-gray-900">
+                          ${listing.price.toLocaleString()}
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-3xl font-bold text-gray-900">
+                        {getPriceTypeLabel(listing.priceType)}
+                      </p>
+                    )}
+                  </div>
+                  {listing.offers > 0 && (
+                    <div className="text-right">
+                      <p className="text-sm text-gray-600">{listing.offers} {listing.offers === 1 ? 'Offer' : 'Offers'}</p>
+                    </div>
+                  )}
+                </div>
                 {(listing as any).groupName && (
                   <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
                     <Link2 className="w-3 h-3" />
@@ -344,18 +355,9 @@ export default function DomainDetails({
           </div>
 
           {/* Tabs */}
+          {(listing.businessAssets && listing.businessAssets.length > 0) || (listing.variants && listing.variants.length > 0) && (
           <div className="border-t border-gray-200">
             <div className="flex gap-4 px-6 pt-4">
-              <button
-                onClick={() => setActiveTab('overview')}
-                className={`pb-4 font-medium transition border-b-2 ${
-                  activeTab === 'overview'
-                    ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                Overview
-              </button>
               {listing.businessAssets && listing.businessAssets.length > 0 && (
                 <button
                   onClick={() => setActiveTab('assets')}
@@ -384,73 +386,6 @@ export default function DomainDetails({
 
             {/* Tab Content */}
             <div className="px-6 pb-6">
-              {activeTab === 'overview' && (
-                <div className="py-6 space-y-6">
-                  {/* Domain Information Grid */}
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-4">Domain Information</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="p-4 bg-gray-50 rounded-lg">
-                        <p className="text-xs text-gray-600 uppercase tracking-wide mb-1">Domain Age</p>
-                        <p className="font-semibold text-gray-900">{getDomainAge()}</p>
-                      </div>
-                      <div className="p-4 bg-gray-50 rounded-lg">
-                        <p className="text-xs text-gray-600 uppercase tracking-wide mb-1">Category</p>
-                        <p className="font-semibold text-gray-900">{listing.category}</p>
-                      </div>
-                      <div className="p-4 bg-gray-50 rounded-lg">
-                        <p className="text-xs text-gray-600 uppercase tracking-wide mb-1">Extension</p>
-                        <p className="font-semibold text-gray-900">.{listing.tld}</p>
-                      </div>
-                      <div className="p-4 bg-gray-50 rounded-lg">
-                        <p className="text-xs text-gray-600 uppercase tracking-wide mb-1">Offers</p>
-                        <p className="font-semibold text-gray-900">{listing.offers}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Bundled Domains Section */}
-                  {listing.bundledDomains && listing.bundledDomains.length > 0 && (
-                    <div className="pt-4 border-t border-gray-200">
-                      <h3 className="font-semibold text-gray-900 mb-4">Bundled Domains</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {listing.bundledDomains.map((domain, idx) => (
-                          <div key={idx} className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition">
-                            <p className="font-semibold text-gray-900">{domain}</p>
-                            <p className="text-sm text-gray-600 mt-1">Included in this sale</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Seller Profile Section */}
-                  {listing.seller && (
-                    <div className="pt-4 border-t border-gray-200">
-                      <h3 className="font-semibold text-gray-900 mb-4">About the Seller</h3>
-                      <div className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition">
-                        <button
-                          onClick={() => onViewSellerDomains?.(listing.seller.id)}
-                          className="flex items-center gap-4 w-full text-left"
-                        >
-                          <img
-                            src={listing.seller.profilePic}
-                            alt={listing.seller.name}
-                            className="w-16 h-16 rounded-full flex-shrink-0 object-cover"
-                          />
-                          <div className="flex-grow min-w-0">
-                            <p className="font-semibold text-gray-900">{listing.seller.name}</p>
-                            <p className="text-sm text-gray-600">⭐ 4.8 (127 reviews)</p>
-                            <p className="text-sm text-gray-600 mt-1">{listing.seller.domainsCount} domains for sale</p>
-                          </div>
-                          <span className="text-blue-600 font-semibold flex-shrink-0">View All →</span>
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
               {activeTab === 'assets' && (
                 <div className="py-4">
                   <h3 className="font-semibold text-gray-900 mb-4">Included Assets</h3>
@@ -518,6 +453,7 @@ export default function DomainDetails({
               )}
             </div>
           </div>
+          )}
         </div>
       </div>
     </div>
