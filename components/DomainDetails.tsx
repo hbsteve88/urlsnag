@@ -1,11 +1,13 @@
 'use client'
 
-import { X, Heart, Share2, Copy, Check, Link2 } from 'lucide-react'
+import { X, Heart, Share2, Copy, Check, Link2, Loader } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { Listing } from '@/lib/generateListings'
 import { useCountdown } from '@/lib/useCountdown'
-import { collection, query, where, getDocs } from 'firebase/firestore'
+import { collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
+import { useAuth } from './AuthContext'
+import { useToast } from './ToastContext'
 
 interface DomainDetailsProps {
   listing: Listing
@@ -22,11 +24,18 @@ export default function DomainDetails({
   onToggleSave,
   onViewSellerDomains,
 }: DomainDetailsProps) {
+  const { user } = useAuth()
+  const { success, error } = useToast()
   const countdown = useCountdown(listing.endTime)
   const [activeTab, setActiveTab] = useState<'assets' | 'variants'>((listing.businessAssets && listing.businessAssets.length > 0) ? 'assets' : 'variants')
   const [showShareMenu, setShowShareMenu] = useState(false)
   const [copied, setCopied] = useState(false)
   const [groupDomains, setGroupDomains] = useState<string[]>([])
+  const [showOfferModal, setShowOfferModal] = useState(false)
+  const [offerAmount, setOfferAmount] = useState('')
+  const [offerMessage, setOfferMessage] = useState('')
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
+  const [submittingOffer, setSubmittingOffer] = useState(false)
 
   // Fetch group domains if this listing is part of a group
   useEffect(() => {
@@ -54,6 +63,48 @@ export default function DomainDetails({
     navigator.clipboard.writeText(shareUrl)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  const handleSubmitOffer = async () => {
+    if (!user) {
+      error('Please sign in to make an offer')
+      return
+    }
+
+    if (!offerAmount || parseFloat(offerAmount) <= 0) {
+      error('Please enter a valid offer amount')
+      return
+    }
+
+    if (!agreedToTerms) {
+      error('Please agree to the terms and conditions')
+      return
+    }
+
+    setSubmittingOffer(true)
+    try {
+      await addDoc(collection(db, 'offers'), {
+        listingId: listing.id,
+        domain: listing.domain,
+        buyerId: user.uid,
+        buyerEmail: user.email,
+        offerAmount: parseFloat(offerAmount),
+        message: offerMessage,
+        status: 'pending',
+        createdAt: serverTimestamp(),
+      })
+
+      success('Offer submitted successfully! The seller will review your offer.')
+      setShowOfferModal(false)
+      setOfferAmount('')
+      setOfferMessage('')
+      setAgreedToTerms(false)
+    } catch (err) {
+      console.error('Error submitting offer:', err)
+      error('Failed to submit offer. Please try again.')
+    } finally {
+      setSubmittingOffer(false)
+    }
   }
 
   const getPriceTypeLabel = (type: string) => {
@@ -223,6 +274,7 @@ export default function DomainDetails({
               {/* Action Buttons */}
               <div className="space-y-2">
                 <button 
+                  onClick={() => setShowOfferModal(true)}
                   disabled={listing.priceType === 'starting_bid' && !listing.verified}
                   className={`w-full px-4 py-3 rounded-lg transition font-medium ${
                     listing.priceType === 'starting_bid' && !listing.verified
@@ -484,6 +536,99 @@ export default function DomainDetails({
               )}
             </div>
           </div>
+          )}
+
+          {/* Make an Offer Modal */}
+          {showOfferModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+              <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full my-8">
+                <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-gray-900">Make an Offer</h2>
+                  <button
+                    onClick={() => setShowOfferModal(false)}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+
+                <div className="p-6 space-y-6 max-h-[calc(100vh-300px)] overflow-y-auto">
+                  {/* Domain Info */}
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-700 font-medium">Domain</p>
+                    <p className="text-xl font-bold text-blue-900">{listing.domain}</p>
+                  </div>
+
+                  {/* Legal Binding Contract Warning */}
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-sm font-semibold text-red-900 mb-2">⚠️ Legal Binding Contract</p>
+                    <p className="text-sm text-red-800">
+                      By submitting an offer, you are entering into a legally binding contract. This offer constitutes a formal proposal to purchase the domain name at the specified price. If accepted by the seller, both parties are obligated to complete the transaction according to the terms of this agreement. Please ensure you are authorized to make this offer and understand the legal implications before proceeding.
+                    </p>
+                  </div>
+
+                  {/* Offer Amount */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-900 mb-2">Offer Amount ($)</label>
+                    <input
+                      type="number"
+                      value={offerAmount}
+                      onChange={(e) => setOfferAmount(e.target.value)}
+                      placeholder="Enter your offer amount"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+
+                  {/* Offer Message */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-900 mb-2">Message (Optional)</label>
+                    <textarea
+                      value={offerMessage}
+                      onChange={(e) => setOfferMessage(e.target.value)}
+                      placeholder="Add any additional information or questions for the seller..."
+                      rows={4}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    />
+                  </div>
+
+                  {/* Terms Agreement */}
+                  <label className="flex items-start gap-3 p-4 bg-gray-50 border border-gray-200 rounded-lg cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={agreedToTerms}
+                      onChange={(e) => setAgreedToTerms(e.target.checked)}
+                      className="w-5 h-5 rounded border-gray-300 mt-0.5 flex-shrink-0"
+                    />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">I understand and agree to the terms</p>
+                      <p className="text-xs text-gray-600 mt-1">
+                        I confirm that I have read and understand the legal binding contract notice above. I understand that submitting this offer creates a legally binding obligation to purchase the domain if the seller accepts my offer.
+                      </p>
+                    </div>
+                  </label>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 flex gap-3">
+                  <button
+                    onClick={() => setShowOfferModal(false)}
+                    className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSubmitOffer}
+                    disabled={submittingOffer || !agreedToTerms || !offerAmount}
+                    className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition font-medium flex items-center justify-center gap-2"
+                  >
+                    {submittingOffer && <Loader className="w-4 h-4 animate-spin" />}
+                    {submittingOffer ? 'Submitting...' : 'Submit Offer'}
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </div>
