@@ -92,6 +92,7 @@ export default function EditDomainPage() {
   const [showForSaleSetup, setShowForSaleSetup] = useState(false)
   const [groupDomains, setGroupDomains] = useState<string[]>([])
   const [showRemoveGroupConfirm, setShowRemoveGroupConfirm] = useState(false)
+  const [domainToRemoveFromGroup, setDomainToRemoveFromGroup] = useState<string | null>(null)
   const debounceTimer = useRef<NodeJS.Timeout | null>(null)
 
 
@@ -251,6 +252,84 @@ export default function EditDomainPage() {
     } catch (err) {
       console.error('Error removing from group:', err)
       error('Failed to remove domain from group')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleRemoveDomainFromGroup = async (domainNameToRemove: string) => {
+    if (!domain?.groupId) return
+
+    setSaving(true)
+    try {
+      // Find the domain ID for the domain to remove
+      const q = query(
+        collection(db, 'listings'),
+        where('groupId', '==', domain.groupId),
+        where('domain', '==', domainNameToRemove)
+      )
+      const snapshot = await getDocs(q)
+      
+      if (snapshot.docs.length > 0) {
+        const docId = snapshot.docs[0].id
+        await updateDoc(doc(db, 'listings', docId), {
+          groupId: null,
+          groupName: null,
+        })
+        
+        // Update local group domains list
+        setGroupDomains(prev => prev.filter(d => d !== domainNameToRemove))
+        setDomainToRemoveFromGroup(null)
+        success(`${domainNameToRemove} removed from group`)
+      }
+    } catch (err) {
+      console.error('Error removing domain from group:', err)
+      error('Failed to remove domain from group')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleSyncPriceToGroup = async () => {
+    if (!domain?.groupId || groupDomains.length === 0) return
+
+    setSaving(true)
+    try {
+      const priceData: any = {
+        priceType: priceMode === 'set' ? 'asking' : priceMode === 'accepting' ? 'accepting_offers' : 'starting_bid',
+      }
+
+      if (priceMode === 'set') {
+        priceData.price = parseInt(formData.price) || 0
+      } else if (priceMode === 'accepting') {
+        priceData.price = parseInt(formData.minimumOfferPrice) || 0
+        priceData.minimumOfferPrice = parseInt(formData.minimumOfferPrice) || 0
+        priceData.hideMinimumOffer = hideMinimumOffer
+      } else if (priceMode === 'auction') {
+        priceData.startingBid = parseInt(formData.startingBid) || 0
+        priceData.reservePrice = parseInt(formData.reservePrice) || 0
+        priceData.hideReservePrice = hideReservePrice
+      }
+
+      // Update all domains in the group with the same price settings
+      for (const groupDomain of groupDomains) {
+        if (groupDomain !== domain.domain) {
+          const q = query(
+            collection(db, 'listings'),
+            where('groupId', '==', domain.groupId),
+            where('domain', '==', groupDomain)
+          )
+          const snapshot = await getDocs(q)
+          if (snapshot.docs.length > 0) {
+            await updateDoc(doc(db, 'listings', snapshot.docs[0].id), priceData)
+          }
+        }
+      }
+      
+      success('Price settings synced to all domains in group')
+    } catch (err) {
+      console.error('Error syncing price to group:', err)
+      error('Failed to sync price settings')
     } finally {
       setSaving(false)
     }
@@ -476,24 +555,47 @@ export default function EditDomainPage() {
               </p>
               <div className="mb-4 p-3 bg-white rounded border border-purple-100">
                 <p className="text-xs font-semibold text-gray-700 mb-2">Domains in this group:</p>
-                <div className="space-y-1">
+                <div className="space-y-2">
                   {groupDomains.map((d, idx) => (
-                    <div key={idx} className="text-sm text-gray-700 flex items-center gap-2">
-                      <Link2 className="w-3 h-3 text-purple-600" />
-                      {d}
-                      {d === domain.domain && <span className="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded">Current</span>}
+                    <div key={idx} className="text-sm text-gray-700 flex items-center justify-between gap-2 p-2 bg-gray-50 rounded">
+                      <div className="flex items-center gap-2">
+                        <Link2 className="w-3 h-3 text-purple-600" />
+                        {d}
+                        {d === domain.domain && <span className="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded">Current</span>}
+                      </div>
+                      {d !== domain.domain && (
+                        <button
+                          type="button"
+                          onClick={() => setDomainToRemoveFromGroup(d)}
+                          className="p-1 hover:bg-red-100 rounded transition"
+                          title="Remove from group"
+                        >
+                          <Trash2 className="w-3 h-3 text-red-600" />
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setShowRemoveGroupConfirm(true)}
-                className="w-full px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition font-medium text-sm flex items-center justify-center gap-2"
-              >
-                <Trash2 className="w-4 h-4" />
-                Remove from Group
-              </button>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleSyncPriceToGroup()}
+                  disabled={saving}
+                  className="flex-1 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 disabled:bg-gray-300 transition font-medium text-sm flex items-center justify-center gap-2"
+                >
+                  {saving ? <Loader className="w-4 h-4 animate-spin" /> : <Link2 className="w-4 h-4" />}
+                  Sync Price to Group
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowRemoveGroupConfirm(true)}
+                  className="flex-1 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition font-medium text-sm flex items-center justify-center gap-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Remove from Group
+                </button>
+              </div>
             </div>
           )}
 
@@ -1205,6 +1307,36 @@ export default function EditDomainPage() {
                 <button
                   type="button"
                   onClick={handleRemoveFromGroup}
+                  disabled={saving}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 transition font-medium flex items-center justify-center gap-2"
+                >
+                  {saving && <Loader className="w-4 h-4 animate-spin" />}
+                  {saving ? 'Removing...' : 'Remove'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Remove Domain from Group Confirmation Modal */}
+        {domainToRemoveFromGroup && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">Remove Domain from Group?</h2>
+              <p className="text-sm text-gray-700 mb-6">
+                Remove <strong>{domainToRemoveFromGroup}</strong> from this group? It will no longer be sold as part of the bundle.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setDomainToRemoveFromGroup(null)}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveDomainFromGroup(domainToRemoveFromGroup)}
                   disabled={saving}
                   className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 transition font-medium flex items-center justify-center gap-2"
                 >
