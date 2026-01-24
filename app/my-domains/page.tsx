@@ -12,7 +12,8 @@ import PromotionCheckoutModal from '@/components/PromotionCheckoutModal'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import BulkEditModal, { BulkEditUpdates } from '@/components/BulkEditModal'
 import ConfirmationModal from '@/components/ConfirmationModal'
-import { Edit, Trash2, AlertCircle, Loader, Eye, X, Zap, ChevronUp, ChevronDown } from 'lucide-react'
+import GroupModal from '@/components/GroupModal'
+import { Edit, Trash2, AlertCircle, Loader, Eye, X, Zap, ChevronUp, ChevronDown, Link2 } from 'lucide-react'
 import { PROMOTION_PACKAGES } from '@/lib/promotionConfig'
 import { logPromotionView } from '@/lib/promotionAnalytics'
 import { getCategoryConfig } from '@/lib/categories'
@@ -37,6 +38,8 @@ interface DomainListing {
   startingBid?: number
   reservePrice?: number
   hideReservePrice?: boolean
+  groupId?: string
+  groupName?: string
 }
 
 const getPriceTypeLabel = (type: string) => {
@@ -78,6 +81,9 @@ export default function MyDomainsPage() {
     message: '',
   })
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false)
+  const [groupModal, setGroupModal] = useState(false)
+  const [groupLoading, setGroupLoading] = useState(false)
+  const [domainGroups, setDomainGroups] = useState<Record<string, string[]>>({})
 
   useEffect(() => {
     if (authLoading) return
@@ -405,6 +411,43 @@ export default function MyDomainsPage() {
     }
   }
 
+  const handleCreateGroup = async (groupName: string) => {
+    if (selectedDomains.size < 2) {
+      error('Select at least 2 domains to create a group')
+      return
+    }
+
+    setGroupLoading(true)
+    try {
+      const groupId = `group_${Date.now()}`
+      const domainIds = Array.from(selectedDomains)
+
+      // Update each domain with the group ID
+      for (const domainId of domainIds) {
+        await updateDoc(doc(db, 'listings', domainId), {
+          groupId: groupId,
+          groupName: groupName,
+        })
+      }
+
+      // Update local state
+      const newGroups = { ...domainGroups }
+      newGroups[groupId] = domainIds
+      setDomainGroups(newGroups)
+
+      // Refresh domains
+      fetchUserDomains()
+      setSelectedDomains(new Set())
+      setGroupModal(false)
+      success(`Created group "${groupName}" with ${domainIds.length} domains`)
+    } catch (err) {
+      console.error('Error creating group:', err)
+      error('Failed to create group')
+    } finally {
+      setGroupLoading(false)
+    }
+  }
+
   const formatPriceType = (priceType: string) => {
     const priceTypeMap: Record<string, string> = {
       asking: 'Set Price',
@@ -542,7 +585,7 @@ export default function MyDomainsPage() {
                       <span className="text-sm font-medium text-blue-900">
                         {selectedDomains.size} selected
                       </span>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
                         <button
                           onClick={() => setSelectedDomains(new Set())}
                           className="px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 rounded-lg transition"
@@ -561,6 +604,14 @@ export default function MyDomainsPage() {
                           className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition"
                         >
                           Bulk Edit
+                        </button>
+                        <button
+                          onClick={() => setGroupModal(true)}
+                          disabled={selectedDomains.size < 2}
+                          className="px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 disabled:bg-gray-400 transition flex items-center gap-2"
+                        >
+                          <Link2 className="w-4 h-4" />
+                          Create Group
                         </button>
                       </div>
                     </div>
@@ -609,6 +660,12 @@ export default function MyDomainsPage() {
                         <h3 className="text-base sm:text-lg font-bold text-blue-600 truncate">{domain.domain}</h3>
                       </div>
                       {getStatusBadge(domain.status)}
+                      {domain.groupName && (
+                        <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800 flex items-center gap-1">
+                          <Link2 className="w-3 h-3" />
+                          {domain.groupName}
+                        </span>
+                      )}
                       {domain.isPromoted && (
                         <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
                           Promoted
@@ -966,6 +1023,15 @@ export default function MyDomainsPage() {
         isLoading={bulkEditLoading}
         onConfirm={handleBulkMakeLiveConfirm}
         onCancel={() => setBulkMakeLiveConfirm({ isOpen: false, message: '' })}
+      />
+
+      {/* Group Modal */}
+      <GroupModal
+        isOpen={groupModal}
+        onClose={() => setGroupModal(false)}
+        onConfirm={handleCreateGroup}
+        selectedCount={selectedDomains.size}
+        isLoading={groupLoading}
       />
 
       <Footer />
