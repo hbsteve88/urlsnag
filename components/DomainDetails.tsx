@@ -233,6 +233,29 @@ export default function DomainDetails({
                   {listing.priceType === 'starting_bid' && !listing.verified ? 'Bidding Disabled' : 'Make an Offer'}
                 </button>
               </div>
+
+              {/* Domain Information Grid */}
+              <div className="mt-6">
+                <h3 className="font-semibold text-gray-900 mb-4">Domain Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <p className="text-xs text-gray-600 uppercase tracking-wide mb-1">Domain Age</p>
+                    <p className="font-semibold text-gray-900">{getDomainAge()}</p>
+                  </div>
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <p className="text-xs text-gray-600 uppercase tracking-wide mb-1">Category</p>
+                    <p className="font-semibold text-gray-900">{listing.category}</p>
+                  </div>
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <p className="text-xs text-gray-600 uppercase tracking-wide mb-1">Extension</p>
+                    <p className="font-semibold text-gray-900">.{listing.tld}</p>
+                  </div>
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <p className="text-xs text-gray-600 uppercase tracking-wide mb-1">Offers</p>
+                    <p className="font-semibold text-gray-900">{listing.offers}</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Right Column - Details */}
