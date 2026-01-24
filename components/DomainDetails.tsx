@@ -32,7 +32,9 @@ export default function DomainDetails({
   const [copied, setCopied] = useState(false)
   const [groupDomains, setGroupDomains] = useState<string[]>([])
   const [showOfferModal, setShowOfferModal] = useState(false)
+  const [showOfferConfirmation, setShowOfferConfirmation] = useState(false)
   const [offerAmount, setOfferAmount] = useState('')
+  const [offerCurrency, setOfferCurrency] = useState('USD')
   const [offerMessage, setOfferMessage] = useState('')
   const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [submittingOffer, setSubmittingOffer] = useState(false)
@@ -65,7 +67,7 @@ export default function DomainDetails({
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const handleSubmitOffer = async () => {
+  const handleSubmitOffer = () => {
     if (!user) {
       error('Please sign in to make an offer')
       return
@@ -81,6 +83,16 @@ export default function DomainDetails({
       return
     }
 
+    // Show confirmation modal instead of submitting immediately
+    setShowOfferConfirmation(true)
+  }
+
+  const handleConfirmOffer = async () => {
+    if (!user) {
+      error('Please sign in to make an offer')
+      return
+    }
+
     setSubmittingOffer(true)
     try {
       await addDoc(collection(db, 'offers'), {
@@ -89,6 +101,7 @@ export default function DomainDetails({
         buyerId: user.uid,
         buyerEmail: user.email,
         offerAmount: parseFloat(offerAmount),
+        offerCurrency: offerCurrency,
         message: offerMessage,
         status: 'pending',
         createdAt: serverTimestamp(),
@@ -96,8 +109,10 @@ export default function DomainDetails({
 
       success('Offer submitted successfully! The seller will review your offer.')
       setShowOfferModal(false)
+      setShowOfferConfirmation(false)
       setOfferAmount('')
       setOfferMessage('')
+      setOfferCurrency('USD')
       setAgreedToTerms(false)
     } catch (err) {
       console.error('Error submitting offer:', err)
@@ -566,6 +581,77 @@ export default function DomainDetails({
           </div>
           )}
 
+          {/* Offer Confirmation Modal */}
+          {showOfferConfirmation && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+                <div className="border-b border-gray-200 p-6 flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-gray-900">Confirm Your Offer</h2>
+                  <button
+                    onClick={() => setShowOfferConfirmation(false)}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+
+                <div className="p-6 space-y-4">
+                  {/* Domain(s) */}
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <p className="text-xs text-gray-600 uppercase tracking-wide mb-1">Domain</p>
+                    <p className="text-lg font-bold text-gray-900">{listing.domain}</p>
+                    {(listing as any).groupId && groupDomains.length > 1 && (
+                      <p className="text-xs text-gray-600 mt-2">
+                        Part of group with {groupDomains.length} domain{groupDomains.length !== 1 ? 's' : ''}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Offer Amount and Currency */}
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-xs text-blue-600 uppercase tracking-wide mb-1">Offer Amount</p>
+                    <p className="text-2xl font-bold text-blue-900">
+                      {offerCurrency} {parseFloat(offerAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </p>
+                  </div>
+
+                  {/* Message Preview */}
+                  {offerMessage && (
+                    <div className="p-4 bg-gray-50 rounded-lg">
+                      <p className="text-xs text-gray-600 uppercase tracking-wide mb-2">Message</p>
+                      <p className="text-sm text-gray-700">{offerMessage}</p>
+                    </div>
+                  )}
+
+                  {/* Confirmation Text */}
+                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                    <p className="text-sm text-amber-800">
+                      By confirming, you agree to the offer terms and understand that payment must be completed if the seller accepts your offer.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="border-t border-gray-200 p-6 flex gap-3">
+                  <button
+                    onClick={() => setShowOfferConfirmation(false)}
+                    className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={handleConfirmOffer}
+                    disabled={submittingOffer}
+                    className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition font-medium flex items-center justify-center gap-2"
+                  >
+                    {submittingOffer && <Loader className="w-4 h-4 animate-spin" />}
+                    {submittingOffer ? 'Confirming...' : 'Confirm Offer'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Make an Offer Modal */}
           {showOfferModal && (
             <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
@@ -598,18 +684,38 @@ export default function DomainDetails({
                     </p>
                   </div>
 
-                  {/* Offer Amount */}
+                  {/* Offer Amount and Currency */}
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-2">Offer Amount ($)</label>
-                    <input
-                      type="number"
-                      value={offerAmount}
-                      onChange={(e) => setOfferAmount(e.target.value)}
-                      placeholder="Enter your offer amount"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                      min="0"
-                      step="0.01"
-                    />
+                    <label className="block text-sm font-semibold text-gray-900 mb-2">Offer Amount</label>
+                    <div className="flex gap-3">
+                      <input
+                        type="number"
+                        value={offerAmount}
+                        onChange={(e) => setOfferAmount(e.target.value)}
+                        placeholder="Enter your offer amount"
+                        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        min="0"
+                        step="0.01"
+                        style={{
+                          WebkitAppearance: 'none',
+                          MozAppearance: 'textfield',
+                        } as React.CSSProperties}
+                      />
+                      <select
+                        value={offerCurrency}
+                        onChange={(e) => setOfferCurrency(e.target.value)}
+                        className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+                      >
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                        <option value="GBP">GBP</option>
+                        <option value="CAD">CAD</option>
+                        <option value="AUD">AUD</option>
+                        <option value="CHF">CHF</option>
+                        <option value="JPY">JPY</option>
+                        <option value="CNY">CNY</option>
+                      </select>
+                    </div>
                   </div>
 
                   {/* Offer Message */}
