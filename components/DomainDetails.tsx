@@ -240,9 +240,15 @@ export default function DomainDetails({
               {/* Price Section */}
               <div className="mb-6 p-4 bg-gray-50 rounded-lg">
                 <p className="text-sm text-gray-600 mb-1">{getPriceTypeLabel(listing.priceType)}</p>
-                <p className="text-3xl font-bold text-gray-900">
-                  ${listing.price.toLocaleString()}
-                </p>
+                {!(listing as any).hideMinimumOffer && !(listing as any).hideReservePrice ? (
+                  <p className="text-3xl font-bold text-gray-900">
+                    ${listing.price.toLocaleString()}
+                  </p>
+                ) : (
+                  <p className="text-3xl font-bold text-gray-400">
+                    Price hidden
+                  </p>
+                )}
                 {(listing as any).groupName && (
                   <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
                     <Link2 className="w-3 h-3" />
