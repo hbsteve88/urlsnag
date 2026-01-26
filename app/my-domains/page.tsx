@@ -333,7 +333,33 @@ export default function MyDomainsPage() {
     try {
       let updatedCount = 0
       const listingIds = Array.from(selectedDomains)
-      const updateData = updates as Record<string, any>
+      const updateData: Record<string, any> = {
+        priceType: updates.priceType,
+      }
+
+      if (updates.category) {
+        updateData.category = updates.category
+      }
+
+      // Set price based on price type
+      if (updates.priceType === 'asking' && updates.price !== undefined) {
+        updateData.price = updates.price
+      } else if (updates.priceType === 'accepting_offers') {
+        if (updates.minimumOfferPrice !== undefined) {
+          updateData.minimumOfferPrice = updates.minimumOfferPrice
+          updateData.price = updates.minimumOfferPrice
+        }
+        updateData.hideMinimumOffer = updates.hideMinimumOffer ?? false
+      } else if (updates.priceType === 'starting_bid') {
+        if (updates.startingBid !== undefined) {
+          updateData.startingBid = updates.startingBid
+          updateData.price = updates.startingBid
+        }
+        if (updates.reservePrice !== undefined) {
+          updateData.reservePrice = updates.reservePrice
+        }
+        updateData.hideReservePrice = updates.hideReservePrice ?? false
+      }
       
       for (const listingId of listingIds) {
         try {
@@ -346,17 +372,35 @@ export default function MyDomainsPage() {
 
       setDomains(domains.map(d => {
         if (selectedDomains.has(d.id)) {
-          return {
+          const updatedDomain: any = {
             ...d,
-            category: updates.category ?? d.category,
             priceType: updates.priceType,
-            price: updates.price ?? d.price,
-            minimumOfferPrice: updates.minimumOfferPrice ?? d.minimumOfferPrice,
-            startingBid: updates.startingBid,
-            reservePrice: updates.reservePrice,
-            hideMinimumOffer: updates.hideMinimumOffer ?? d.hideMinimumOffer,
-            hideReservePrice: updates.hideReservePrice ?? d.hideReservePrice,
           }
+          
+          if (updates.category) {
+            updatedDomain.category = updates.category
+          }
+
+          if (updates.priceType === 'asking' && updates.price !== undefined) {
+            updatedDomain.price = updates.price
+          } else if (updates.priceType === 'accepting_offers') {
+            if (updates.minimumOfferPrice !== undefined) {
+              updatedDomain.minimumOfferPrice = updates.minimumOfferPrice
+              updatedDomain.price = updates.minimumOfferPrice
+            }
+            updatedDomain.hideMinimumOffer = updates.hideMinimumOffer ?? false
+          } else if (updates.priceType === 'starting_bid') {
+            if (updates.startingBid !== undefined) {
+              updatedDomain.startingBid = updates.startingBid
+              updatedDomain.price = updates.startingBid
+            }
+            if (updates.reservePrice !== undefined) {
+              updatedDomain.reservePrice = updates.reservePrice
+            }
+            updatedDomain.hideReservePrice = updates.hideReservePrice ?? false
+          }
+
+          return updatedDomain
         }
         return d
       }))
@@ -756,7 +800,13 @@ export default function MyDomainsPage() {
                       </div>
                       <div>
                         <p className="text-gray-500">Price</p>
-                        <p className="font-medium text-gray-900">${domain.price.toLocaleString()}</p>
+                        {domain.priceType === 'accepting_offers' && domain.hideMinimumOffer ? (
+                          <p className="font-medium text-gray-900">Price Hidden</p>
+                        ) : domain.priceType === 'starting_bid' && domain.hideReservePrice ? (
+                          <p className="font-medium text-gray-900">Price Hidden</p>
+                        ) : (
+                          <p className="font-medium text-gray-900">${domain.price.toLocaleString()}</p>
+                        )}
                       </div>
                       <div>
                         <p className="text-gray-500">Price Type</p>
