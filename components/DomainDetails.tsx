@@ -531,6 +531,46 @@ export default function DomainDetails({
               </div>
               )}
 
+              {/* Asset Details */}
+              {(listing.hasWebsite || listing.hasLogo || listing.hasBusinessAssets || listing.hasSocialAccounts) && (
+                <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <h3 className="font-semibold text-gray-900 mb-4">Asset Details</h3>
+                  <div className="space-y-3">
+                    {listing.hasWebsite && (
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Website</p>
+                        <p className="text-sm text-gray-600">{listing.website || 'Website included'}</p>
+                      </div>
+                    )}
+                    {listing.hasLogo && (
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Logo</p>
+                        <p className="text-sm text-gray-600">Professional logo included</p>
+                      </div>
+                    )}
+                    {listing.hasBusinessAssets && (
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Business Assets</p>
+                        <p className="text-sm text-gray-600">{listing.businessName || 'Business assets included'}</p>
+                        {listing.businessDescription && (
+                          <p className="text-sm text-gray-600 mt-1">{listing.businessDescription}</p>
+                        )}
+                      </div>
+                    )}
+                    {listing.hasSocialAccounts && (
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Social Accounts</p>
+                        <p className="text-sm text-gray-600">
+                          {listing.socialMedia && listing.socialMedia.length > 0
+                            ? `${listing.socialMedia.length} social media account${listing.socialMedia.length !== 1 ? 's' : ''}`
+                            : 'Social media accounts included'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
             </div>
           </div>
 
