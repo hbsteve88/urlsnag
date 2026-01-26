@@ -16,6 +16,7 @@ import { useToast } from '@/components/ToastContext'
 import { useAuth } from '@/components/AuthContext'
 import { CheckCircle, AlertCircle, Upload, X, ChevronDown, Loader } from 'lucide-react'
 import { CATEGORIES } from '@/lib/categories'
+import { formatSocialMediaUrl } from '@/lib/socialMediaFormatter'
 
 // Prevent scroll wheel from changing number input values
 const preventNumberInputScroll = (e: WheelEvent) => {
@@ -865,7 +866,8 @@ export default function SellPage() {
                         type="button"
                         onClick={() => {
                           if (newSocial.url.trim()) {
-                            setSocialAccounts([...socialAccounts, newSocial])
+                            const formattedUrl = formatSocialMediaUrl(newSocial.platform, newSocial.url)
+                            setSocialAccounts([...socialAccounts, { ...newSocial, url: formattedUrl }])
                             setNewSocial({ platform: 'Instagram', url: '' })
                           }
                         }}

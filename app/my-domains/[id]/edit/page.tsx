@@ -12,6 +12,7 @@ import { useToast } from '@/components/ToastContext'
 import { AlertCircle, Loader, Upload, X, ChevronDown, Link2, Trash2 } from 'lucide-react'
 import { CATEGORIES, suggestCategory } from '@/lib/categories'
 import { collection, query, where, getDocs } from 'firebase/firestore'
+import { formatSocialMediaUrl } from '@/lib/socialMediaFormatter'
 
 // Hide number input spinners and prevent scroll wheel changes
 const hideNumberSpinnersStyle = `
@@ -1283,7 +1284,8 @@ export default function EditDomainPage() {
                       type="button"
                       onClick={() => {
                         if (newSocial.url.trim()) {
-                          setSocialAccounts([...socialAccounts, newSocial])
+                          const formattedUrl = formatSocialMediaUrl(newSocial.platform, newSocial.url)
+                          setSocialAccounts([...socialAccounts, { ...newSocial, url: formattedUrl }])
                           setNewSocial({ platform: 'Instagram', url: '' })
                         }
                       }}
