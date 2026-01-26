@@ -14,7 +14,6 @@ import BulkEditModal, { BulkEditUpdates } from '@/components/BulkEditModal'
 import ConfirmationModal from '@/components/ConfirmationModal'
 import GroupModal from '@/components/GroupModal'
 import { Edit, Trash2, AlertCircle, Loader, Eye, X, Zap, ChevronUp, ChevronDown, Link2 } from 'lucide-react'
-import { PROMOTION_PACKAGES } from '@/lib/promotionConfig'
 import { logPromotionView } from '@/lib/promotionAnalytics'
 import { getCategoryConfig, CATEGORIES } from '@/lib/categories'
 
@@ -259,29 +258,30 @@ export default function MyDomainsPage() {
     }
   }
 
-  const handlePromoteDomain = async (packageId: string) => {
+  const handlePromoteDomain = async (promotionData: { type: string; duration?: number; views?: number; price: number }) => {
     if (!promotionModal) return
     
     setPromotingId(promotionModal.id)
     try {
-      const pkg = PROMOTION_PACKAGES.find(p => p.id === packageId)
-      if (!pkg) {
-        error('Invalid promotion package')
-        return
-      }
-
-      // TODO: Integrate Stripe payment here
-      // For now, we'll create the promotion directly
-      const expiresAt = new Date(Date.now() + pkg.duration * 24 * 60 * 60 * 1000)
-      
-      await updateDoc(doc(db, 'listings', promotionModal.id), {
+      let expiresAt = null
+      let updateData: any = {
         isPromoted: true,
         promotedAt: new Date(),
-        promotionExpiresAt: expiresAt,
-        promotionPackage: packageId,
-        promotionViews: pkg.views,
-        promotionPrice: pkg.price,
-      })
+        promotionType: promotionData.type,
+        promotionPrice: promotionData.price,
+      }
+
+      if (promotionData.type === 'duration' && promotionData.duration) {
+        expiresAt = new Date(Date.now() + promotionData.duration * 24 * 60 * 60 * 1000)
+        updateData.promotionExpiresAt = expiresAt
+        updateData.promotionDuration = promotionData.duration
+      } else if (promotionData.type === 'views' && promotionData.views) {
+        updateData.promotionViews = promotionData.views
+      } else if (promotionData.type === 'until_sold') {
+        updateData.promotionUntilSold = true
+      }
+      
+      await updateDoc(doc(db, 'listings', promotionModal.id), updateData)
       
       setDomains(domains.map(d => 
         d.id === promotionModal.id 
@@ -289,7 +289,17 @@ export default function MyDomainsPage() {
           : d
       ))
       setPromotionModal(null)
-      success(`Domain promoted with ${pkg.name} package! Featured for ${pkg.duration} days.`)
+      
+      let successMessage = 'Domain promoted successfully!'
+      if (promotionData.type === 'duration' && promotionData.duration) {
+        successMessage = `Domain promoted for ${promotionData.duration} days!`
+      } else if (promotionData.type === 'views' && promotionData.views) {
+        successMessage = `Domain promoted with ${promotionData.views.toLocaleString()} bonus views!`
+      } else if (promotionData.type === 'until_sold') {
+        successMessage = 'Domain promoted until sold!'
+      }
+      
+      success(successMessage)
     } catch (err) {
       console.error('Error promoting domain:', err)
       error('Failed to promote domain')
@@ -806,7 +816,7 @@ export default function MyDomainsPage() {
                         className="px-3 py-2 rounded-lg text-xs font-medium transition w-full sm:w-auto whitespace-nowrap bg-yellow-100 text-yellow-800 hover:bg-yellow-200 flex items-center justify-center gap-1"
                       >
                         <Zap className="w-4 h-4" />
-                        Promote $1
+                        Promote
                       </button>
                     )}
                     <div className="flex gap-2 w-full">
