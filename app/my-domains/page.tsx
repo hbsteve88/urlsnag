@@ -40,6 +40,10 @@ interface DomainListing {
   hideReservePrice?: boolean
   groupId?: string
   groupName?: string
+  hasWebsite?: boolean
+  hasLogo?: boolean
+  hasBusinessAssets?: boolean
+  hasSocialAccounts?: boolean
 }
 
 const getPriceTypeLabel = (type: string) => {
@@ -812,7 +816,6 @@ export default function MyDomainsPage() {
                     onClick={() => previewDomain.logo && setLightboxImage(previewDomain.logo)}
                     className="w-full h-64 object-cover rounded-lg cursor-pointer hover:opacity-90 transition"
                   />
-                  <p className="text-xs text-gray-500 mt-2">Click image to view full size</p>
                 </div>
               )}
 
@@ -831,6 +834,35 @@ export default function MyDomainsPage() {
                   )}
                 </div>
               </div>
+
+              {/* Assets Included */}
+              {(previewDomain.hasWebsite || previewDomain.hasLogo || previewDomain.hasBusinessAssets || previewDomain.hasSocialAccounts) && (
+                <div>
+                  <p className="text-sm font-semibold text-gray-900 mb-3">Included Assets</p>
+                  <div className="flex flex-wrap gap-2">
+                    {previewDomain.hasWebsite && (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                        🌐 Website
+                      </span>
+                    )}
+                    {previewDomain.hasLogo && (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                        🎨 Logo
+                      </span>
+                    )}
+                    {previewDomain.hasBusinessAssets && (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        📦 Business Assets
+                      </span>
+                    )}
+                    {previewDomain.hasSocialAccounts && (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-pink-100 text-pink-800">
+                        📱 Social Accounts
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Category & Price */}
               <div className="grid grid-cols-2 gap-4">

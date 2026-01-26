@@ -956,6 +956,32 @@ function ListingCard({ listing, isSaved, onToggleSave, onSelect }: ListingCardPr
           )}
         </div>
 
+        {/* Assets Pills */}
+        {((listing as any).hasWebsite || (listing as any).hasLogo || (listing as any).hasBusinessAssets || (listing as any).hasSocialAccounts) && (
+          <div className="flex flex-wrap gap-1 mb-3">
+            {(listing as any).hasWebsite && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                🌐 Website
+              </span>
+            )}
+            {(listing as any).hasLogo && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                🎨 Logo
+              </span>
+            )}
+            {(listing as any).hasBusinessAssets && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                📦 Assets
+              </span>
+            )}
+            {(listing as any).hasSocialAccounts && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-pink-100 text-pink-800">
+                📱 Social
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Bottom Row - Promoted Badge Left, Heart Right */}
         <div className="flex items-center justify-between mt-auto">
           {listing.isPromoted && (
