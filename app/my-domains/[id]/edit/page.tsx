@@ -13,6 +13,7 @@ import { AlertCircle, Loader, Upload, X, ChevronDown, Link2, Trash2 } from 'luci
 import { CATEGORIES, suggestCategory } from '@/lib/categories'
 import { collection, query, where, getDocs } from 'firebase/firestore'
 import { formatSocialMediaUrl } from '@/lib/socialMediaFormatter'
+import { formatWebsiteUrl } from '@/lib/websiteFormatter'
 
 // Hide number input spinners and prevent scroll wheel changes
 const hideNumberSpinnersStyle = `
@@ -528,7 +529,7 @@ export default function EditDomainPage() {
 
       // Add optional fields
       updateData.hasWebsite = hasWebsite
-      updateData.website = formData.website || null
+      updateData.website = hasWebsite && formData.website ? formatWebsiteUrl(formData.website) : null
       updateData.hasLogo = hasLogo
       updateData.hasBusinessAssets = hasBusinessAssets
       updateData.businessName = formData.businessName || null
@@ -1170,10 +1171,10 @@ export default function EditDomainPage() {
                 {hasWebsite && (
                 <>
                   <input
-                    type="url"
+                    type="text"
                     value={formData.website}
                     onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                    placeholder="https://example.com"
+                    placeholder="example.com or https://example.com"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 mb-3"
                   />
                   <label className="flex items-start gap-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
