@@ -469,6 +469,14 @@ export default function EditDomainPage() {
       }
     }
 
+    // Preserve scroll position
+    const scrollPosition = window.scrollY
+    
+    // Disable scroll restoration to prevent automatic scroll to top
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual'
+    }
+
     setSaving(true)
 
     try {
@@ -544,6 +552,8 @@ export default function EditDomainPage() {
       }
 
       success('Domain updated successfully!')
+      // Restore scroll position before navigating
+      window.scrollTo(0, scrollPosition)
       setTimeout(() => {
         router.push('/my-domains')
       }, 1500)
@@ -551,8 +561,14 @@ export default function EditDomainPage() {
       console.error('Error updating domain:', err)
       const errorMessage = err?.message || 'Failed to update domain'
       error(`Failed to update domain: ${errorMessage}`)
+      // Restore scroll position on error
+      window.scrollTo(0, scrollPosition)
     } finally {
       setSaving(false)
+      // Re-enable scroll restoration
+      if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'auto'
+      }
     }
   }
 
