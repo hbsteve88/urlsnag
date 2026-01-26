@@ -333,22 +333,22 @@ export default function DomainDetails({
                   <div className="flex flex-wrap gap-2">
                     {listing.hasWebsite && (
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                        🌐 Website
+                        Website
                       </span>
                     )}
                     {listing.hasLogo && (
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
-                        🎨 Logo
+                        Logo
                       </span>
                     )}
                     {listing.hasBusinessAssets && (
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                        📦 Business Assets
+                        Business Assets
                       </span>
                     )}
                     {listing.hasSocialAccounts && (
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-pink-100 text-pink-800">
-                        📱 Social Accounts
+                        Social Accounts
                       </span>
                     )}
                   </div>
