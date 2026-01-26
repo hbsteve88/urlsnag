@@ -12,33 +12,33 @@ export const PROMOTION_PACKAGES: PromotionPackage[] = [
     id: 'starter',
     name: 'Starter',
     duration: 7,
-    views: 1000,
-    price: 9.99,
-    description: '7 days, 1,000 views'
+    views: 500,
+    price: 5,
+    description: '7 days'
   },
   {
     id: 'popular',
     name: 'Popular',
     duration: 14,
-    views: 5000,
-    price: 24.99,
-    description: '14 days, 5,000 views'
+    views: 1500,
+    price: 10,
+    description: '14 days'
   },
   {
     id: 'premium',
     name: 'Premium',
     duration: 30,
-    views: 15000,
-    price: 49.99,
-    description: '30 days, 15,000 views'
+    views: 5000,
+    price: 20,
+    description: '30 days'
   },
   {
     id: 'elite',
     name: 'Elite',
     duration: 60,
-    views: 50000,
-    price: 99.99,
-    description: '60 days, 50,000 views'
+    views: 15000,
+    price: 50,
+    description: '60 days'
   },
 ]
 

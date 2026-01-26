@@ -71,11 +71,7 @@ export default function PromotionCheckoutModal({ domain, onClose, onCheckout, is
                 <div className="space-y-1 text-sm text-gray-600">
                   <p className="flex items-center gap-2">
                     <Check className="w-4 h-4 text-green-600" />
-                    {pkg.views.toLocaleString()} total views
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-green-600" />
-                    ~{viewsPerDay.toLocaleString()} views/day
+                    {pkg.views.toLocaleString()} bonus views
                   </p>
                   <p className="flex items-center gap-2">
                     <Check className="w-4 h-4 text-green-600" />
@@ -100,12 +96,8 @@ export default function PromotionCheckoutModal({ domain, onClose, onCheckout, is
                 <span className="font-medium text-gray-900">{selectedPkg.duration} days</span>
               </div>
               <div className="flex justify-between">
-                <span>Total Views:</span>
+                <span>Bonus Views:</span>
                 <span className="font-medium text-gray-900">{selectedPkg.views.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Views Per Day:</span>
-                <span className="font-medium text-gray-900">~{viewsPerDay.toLocaleString()}</span>
               </div>
               <div className="border-t border-blue-200 pt-2 mt-2 flex justify-between">
                 <span className="font-semibold">Total:</span>
