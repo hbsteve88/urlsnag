@@ -487,6 +487,14 @@ export default function EditDomainPage() {
       window.history.scrollRestoration = 'manual'
     }
 
+    // Lock scroll position during save
+    const lockScroll = (e: Event) => {
+      e.preventDefault()
+      window.scrollTo(0, scrollPosition)
+    }
+    
+    window.addEventListener('scroll', lockScroll, { passive: false })
+
     setSaving(true)
 
     try {
@@ -562,8 +570,6 @@ export default function EditDomainPage() {
       }
 
       success('Domain updated successfully!')
-      // Restore scroll position before navigating
-      window.scrollTo(0, scrollPosition)
       setTimeout(() => {
         router.push('/my-domains')
       }, 1500)
@@ -575,6 +581,8 @@ export default function EditDomainPage() {
       window.scrollTo(0, scrollPosition)
     } finally {
       setSaving(false)
+      // Remove scroll lock listener
+      window.removeEventListener('scroll', lockScroll)
       // Re-enable scroll restoration
       if ('scrollRestoration' in window.history) {
         window.history.scrollRestoration = 'auto'
