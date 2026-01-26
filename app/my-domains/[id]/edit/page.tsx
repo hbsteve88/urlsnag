@@ -14,6 +14,7 @@ import { CATEGORIES, suggestCategory } from '@/lib/categories'
 import { collection, query, where, getDocs } from 'firebase/firestore'
 import { formatSocialMediaUrl } from '@/lib/socialMediaFormatter'
 import { formatWebsiteUrl } from '@/lib/websiteFormatter'
+import RichTextEditor from '@/components/RichTextEditor'
 
 // Hide number input spinners and prevent scroll wheel changes
 const hideNumberSpinnersStyle = `
@@ -1143,13 +1144,12 @@ export default function EditDomainPage() {
           {/* Description */}
           <div>
             <label className="block text-sm font-semibold text-gray-900 mb-2">Description</label>
-            <textarea
-              name="description"
+            <p className="text-xs text-gray-500 mb-2">Formatting allowed (bold, italic, lists). Hyperlinks are not permitted.</p>
+            <RichTextEditor
               value={formData.description}
-              onChange={handleChange}
+              onChange={(value) => setFormData({ ...formData, description: value })}
               placeholder="Tell buyers about your domain, its history, potential uses, etc..."
               rows={5}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
 
