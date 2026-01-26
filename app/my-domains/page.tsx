@@ -69,6 +69,8 @@ export default function MyDomainsPage() {
   const [errorMessage, setErrorMessage] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<'recent' | 'price-high' | 'price-low' | 'name'>('recent')
+  const [categoryFilter, setCategoryFilter] = useState<string>('all')
+  const [priceTypeFilter, setPriceTypeFilter] = useState<string>('all')
   const [previewDomain, setPreviewDomain] = useState<DomainListing | null>(null)
   const [lightboxImage, setLightboxImage] = useState<string | null>(null)
   const [rejectionModal, setRejectionModal] = useState<DomainListing | null>(null)
@@ -107,6 +109,16 @@ export default function MyDomainsPage() {
         d.category.toLowerCase().includes(searchQuery.toLowerCase())
       
       if (!matchesSearch) return false
+
+      // Category filter
+      if (categoryFilter !== 'all' && d.category !== categoryFilter) {
+        return false
+      }
+
+      // Price type filter
+      if (priceTypeFilter !== 'all' && d.priceType !== priceTypeFilter) {
+        return false
+      }
 
       // Status filter
       if (statusFilter === 'live') {
@@ -148,7 +160,7 @@ export default function MyDomainsPage() {
     })
 
     setFilteredDomains(filtered)
-  }, [domains, searchQuery, sortBy, statusFilter, showPromotedOnly])
+  }, [domains, searchQuery, sortBy, statusFilter, showPromotedOnly, categoryFilter, priceTypeFilter])
 
   const fetchUserDomains = async () => {
     try {
@@ -529,6 +541,45 @@ export default function MyDomainsPage() {
             {!isHeaderCollapsed && (
               <div className="p-3 sm:p-4 space-y-3">
                 {/* Status and Sort in one row */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Category</label>
+                    <select
+                      value={categoryFilter}
+                      onChange={(e) => setCategoryFilter(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+                    >
+                      <option value="all">All Categories</option>
+                      <option value="Tech">Tech</option>
+                      <option value="Business">Business</option>
+                      <option value="Finance">Finance</option>
+                      <option value="Health">Health</option>
+                      <option value="Education">Education</option>
+                      <option value="Entertainment">Entertainment</option>
+                      <option value="Food & Beverage">Food & Beverage</option>
+                      <option value="Travel">Travel</option>
+                      <option value="Real Estate">Real Estate</option>
+                      <option value="Fashion">Fashion</option>
+                      <option value="Sports">Sports</option>
+                      <option value="Automotive">Automotive</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Price Type</label>
+                    <select
+                      value={priceTypeFilter}
+                      onChange={(e) => setPriceTypeFilter(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+                    >
+                      <option value="all">All Types</option>
+                      <option value="asking">Set Price</option>
+                      <option value="accepting_offers">Offers</option>
+                      <option value="starting_bid">Auction</option>
+                    </select>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1">Status</label>
