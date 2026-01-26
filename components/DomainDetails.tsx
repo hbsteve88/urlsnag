@@ -561,26 +561,31 @@ export default function DomainDetails({
                     )}
                     {listing.hasBusinessAssets && (
                       <div>
-                        <p className="text-sm font-medium text-gray-900 mb-1">Business Assets</p>
-                        {(listing as any).businessName && (
-                          <p className="text-sm text-gray-600 mb-1"><span className="font-medium">Name:</span> {(listing as any).businessName}</p>
-                        )}
-                        {(listing as any).businessDescription && (
-                          <p className="text-sm text-gray-600 mb-1"><span className="font-medium">Description:</span> {(listing as any).businessDescription}</p>
-                        )}
-                        {(listing as any).businessAssets && (listing as any).businessAssets.length > 0 && (
-                          <div className="text-sm text-gray-600">
-                            <p className="font-medium mb-1">Included Assets:</p>
-                            <ul className="list-disc list-inside space-y-0.5">
+                        <p className="text-sm font-medium text-gray-900 mb-2">Business Assets</p>
+                        <div className="text-sm text-gray-600 space-y-2">
+                          {(listing as any).businessName && (
+                            <div className="p-2 bg-white border border-gray-200 rounded">
+                              <p className="whitespace-pre-wrap break-words">{(listing as any).businessName}</p>
+                            </div>
+                          )}
+                          {(listing as any).businessDescription && (
+                            <div className="p-2 bg-white border border-gray-200 rounded">
+                              <p className="whitespace-pre-wrap break-words">{(listing as any).businessDescription}</p>
+                            </div>
+                          )}
+                          {(listing as any).businessAssets && (listing as any).businessAssets.length > 0 && (
+                            <div>
                               {(listing as any).businessAssets.map((asset: any, idx: number) => (
-                                <li key={idx}>{asset.type || asset}</li>
+                                <div key={idx} className="p-2 bg-white border border-gray-200 rounded mb-2">
+                                  <p className="whitespace-pre-wrap break-words">{asset.type || asset}</p>
+                                </div>
                               ))}
-                            </ul>
-                          </div>
-                        )}
-                        {!(listing as any).businessName && !(listing as any).businessDescription && (!(listing as any).businessAssets || (listing as any).businessAssets.length === 0) && (
-                          <p className="text-sm text-gray-600">Business assets included</p>
-                        )}
+                            </div>
+                          )}
+                          {!(listing as any).businessName && !(listing as any).businessDescription && (!(listing as any).businessAssets || (listing as any).businessAssets.length === 0) && (
+                            <p>Business assets included</p>
+                          )}
+                        </div>
                       </div>
                     )}
                     {listing.hasSocialAccounts && (

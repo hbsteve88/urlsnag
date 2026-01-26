@@ -1000,26 +1000,31 @@ export default function MyDomainsPage() {
                         )}
                         {previewDomain.hasBusinessAssets && (
                           <div>
-                            <p className="text-sm font-medium text-gray-900 mb-1">Business Assets</p>
-                            {previewDomain.businessName && (
-                              <p className="text-sm text-gray-600 mb-1"><span className="font-medium">Name:</span> {previewDomain.businessName}</p>
-                            )}
-                            {previewDomain.businessDescription && (
-                              <p className="text-sm text-gray-600 mb-1"><span className="font-medium">Description:</span> {previewDomain.businessDescription}</p>
-                            )}
-                            {previewDomain.businessAssets && previewDomain.businessAssets.length > 0 && (
-                              <div className="text-sm text-gray-600">
-                                <p className="font-medium mb-1">Included Assets:</p>
-                                <ul className="list-disc list-inside space-y-0.5">
+                            <p className="text-sm font-medium text-gray-900 mb-2">Business Assets</p>
+                            <div className="text-sm text-gray-600 space-y-2">
+                              {previewDomain.businessName && (
+                                <div className="p-2 bg-white border border-gray-200 rounded">
+                                  <p className="whitespace-pre-wrap break-words">{previewDomain.businessName}</p>
+                                </div>
+                              )}
+                              {previewDomain.businessDescription && (
+                                <div className="p-2 bg-white border border-gray-200 rounded">
+                                  <p className="whitespace-pre-wrap break-words">{previewDomain.businessDescription}</p>
+                                </div>
+                              )}
+                              {previewDomain.businessAssets && previewDomain.businessAssets.length > 0 && (
+                                <div>
                                   {previewDomain.businessAssets.map((asset: any, idx: number) => (
-                                    <li key={idx}>{asset.type || asset}</li>
+                                    <div key={idx} className="p-2 bg-white border border-gray-200 rounded mb-2">
+                                      <p className="whitespace-pre-wrap break-words">{asset.type || asset}</p>
+                                    </div>
                                   ))}
-                                </ul>
-                              </div>
-                            )}
-                            {!previewDomain.businessName && !previewDomain.businessDescription && (!previewDomain.businessAssets || previewDomain.businessAssets.length === 0) && (
-                              <p className="text-sm text-gray-600">Business assets included</p>
-                            )}
+                                </div>
+                              )}
+                              {!previewDomain.businessName && !previewDomain.businessDescription && (!previewDomain.businessAssets || previewDomain.businessAssets.length === 0) && (
+                                <p>Business assets included</p>
+                              )}
+                            </div>
                           </div>
                         )}
                         {previewDomain.hasSocialAccounts && (
