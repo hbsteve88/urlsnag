@@ -455,29 +455,38 @@ export default function EditDomainPage() {
     setErrorMessage('')
     setSuccessMessage('')
 
-    if (!domain) return
+    if (!domain) {
+      console.log('No domain found')
+      return
+    }
 
     // Validate price based on price mode
     if (priceMode === 'set') {
       if (!formData.price || parseFloat(formData.price) <= 0) {
+        console.log('Invalid asking price:', formData.price)
         setErrorMessage('Please enter a valid asking price')
         return
       }
     } else if (priceMode === 'accepting') {
       if (!formData.minimumOfferPrice || parseFloat(formData.minimumOfferPrice) <= 0) {
+        console.log('Invalid minimum offer price:', formData.minimumOfferPrice)
         setErrorMessage('Please enter a valid minimum offer price')
         return
       }
     } else if (priceMode === 'auction') {
       if (!formData.startingBid || parseFloat(formData.startingBid) <= 0) {
+        console.log('Invalid starting bid:', formData.startingBid)
         setErrorMessage('Please enter a valid starting bid')
         return
       }
       if (!formData.reservePrice || parseFloat(formData.reservePrice) <= 0) {
+        console.log('Invalid reserve price:', formData.reservePrice)
         setErrorMessage('Please enter a valid reserve price')
         return
       }
     }
+    
+    console.log('Validation passed, proceeding with save')
 
     // Preserve scroll position
     const scrollPosition = window.scrollY
