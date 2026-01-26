@@ -350,35 +350,37 @@ export default function ListingsGrid({
       return matchesSearch && matchesCategory && matchesTld && matchesContent && matchesAdvanced && matchesSaved && matchesGroups
     })
 
-    // Sort
-    switch (sortBy) {
-      case 'newest':
-        filtered.sort((a, b) => {
+    // Sort - promoted domains first, then by selected sort option
+    filtered.sort((a, b) => {
+      // First, sort by promoted status (promoted domains first)
+      const aPromoted = (a as any).isPromoted ? 1 : 0
+      const bPromoted = (b as any).isPromoted ? 1 : 0
+      if (aPromoted !== bPromoted) {
+        return bPromoted - aPromoted
+      }
+
+      // Then apply the selected sort option
+      switch (sortBy) {
+        case 'newest':
           const aTime = a.createdAt instanceof Date ? a.createdAt.getTime() : 0
           const bTime = b.createdAt instanceof Date ? b.createdAt.getTime() : 0
           return bTime - aTime
-        })
-        break
-      case 'oldest':
-        filtered.sort((a, b) => {
-          const aTime = a.createdAt instanceof Date ? a.createdAt.getTime() : 0
-          const bTime = b.createdAt instanceof Date ? b.createdAt.getTime() : 0
-          return aTime - bTime
-        })
-        break
-      case 'price-low':
-        filtered.sort((a, b) => a.price - b.price)
-        break
-      case 'price-high':
-        filtered.sort((a, b) => b.price - a.price)
-        break
-      case 'offers-low':
-        filtered.sort((a, b) => a.offers - b.offers)
-        break
-      case 'offers-high':
-        filtered.sort((a, b) => b.offers - a.offers)
-        break
-    }
+        case 'oldest':
+          const aTimeOld = a.createdAt instanceof Date ? a.createdAt.getTime() : 0
+          const bTimeOld = b.createdAt instanceof Date ? b.createdAt.getTime() : 0
+          return aTimeOld - bTimeOld
+        case 'price-low':
+          return a.price - b.price
+        case 'price-high':
+          return b.price - a.price
+        case 'offers-low':
+          return a.offers - b.offers
+        case 'offers-high':
+          return b.offers - a.offers
+        default:
+          return 0
+      }
+    })
 
     setDisplayedListings(filtered.slice(0, ITEMS_PER_PAGE * page))
     setPage(1)
@@ -419,33 +421,36 @@ export default function ListingsGrid({
     })
 
     let sorted = [...filtered]
-    switch (sortBy) {
-      case 'popular':
-        sorted.sort((a, b) => {
+    sorted.sort((a, b) => {
+      // First, sort by promoted status (promoted domains first)
+      const aPromoted = (a as any).isPromoted ? 1 : 0
+      const bPromoted = (b as any).isPromoted ? 1 : 0
+      if (aPromoted !== bPromoted) {
+        return bPromoted - aPromoted
+      }
+
+      // Then apply the selected sort option
+      switch (sortBy) {
+        case 'popular':
           const aPopularity = (a.views || 0) + (a.bids || 0) * 2
           const bPopularity = (b.views || 0) + (b.bids || 0) * 2
           return bPopularity - aPopularity
-        })
-        break
-      case 'newest':
-        sorted.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-        break
-      case 'oldest':
-        sorted.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
-        break
-      case 'price-low':
-        sorted.sort((a, b) => a.price - b.price)
-        break
-      case 'price-high':
-        sorted.sort((a, b) => b.price - a.price)
-        break
-      case 'offers-low':
-        sorted.sort((a, b) => a.offers - b.offers)
-        break
-      case 'offers-high':
-        sorted.sort((a, b) => b.offers - a.offers)
-        break
-    }
+        case 'newest':
+          return b.createdAt.getTime() - a.createdAt.getTime()
+        case 'oldest':
+          return a.createdAt.getTime() - b.createdAt.getTime()
+        case 'price-low':
+          return a.price - b.price
+        case 'price-high':
+          return b.price - a.price
+        case 'offers-low':
+          return a.offers - b.offers
+        case 'offers-high':
+          return b.offers - a.offers
+        default:
+          return 0
+      }
+    })
 
     setDisplayedListings(sorted.slice(0, ITEMS_PER_PAGE * nextPage))
     setPage(nextPage)
