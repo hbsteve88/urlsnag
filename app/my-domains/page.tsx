@@ -838,9 +838,9 @@ export default function MyDomainsPage() {
       {/* Preview Modal */}
       {previewDomain && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">Preview Listing</h2>
+              <h1 className="text-3xl font-bold text-gray-900">{previewDomain.domain}</h1>
               <button
                 onClick={() => setPreviewDomain(null)}
                 className="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100"
@@ -849,117 +849,164 @@ export default function MyDomainsPage() {
               </button>
             </div>
 
-            <div className="p-6 space-y-6">
-              {/* Domain Image */}
-              {previewDomain.logo && !previewDomain.logo.includes('stylized') && (
-                <div>
-                  <img
-                    src={previewDomain.logo || ''}
-                    alt={previewDomain.domain}
-                    onClick={() => previewDomain.logo && setLightboxImage(previewDomain.logo)}
-                    className="w-full h-64 object-cover rounded-lg cursor-pointer hover:opacity-90 transition"
-                  />
-                </div>
-              )}
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Left Column - Image & Assets */}
+                <div className="md:col-span-1">
+                  {previewDomain.logo && !previewDomain.logo.includes('stylized') && (
+                    <div className="relative w-full h-64 bg-gray-200 rounded-lg overflow-hidden mb-4">
+                      <img
+                        src={previewDomain.logo}
+                        alt={previewDomain.domain}
+                        onClick={() => previewDomain.logo && setLightboxImage(previewDomain.logo)}
+                        className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition"
+                      />
+                    </div>
+                  )}
 
-              {/* Domain Name */}
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  {previewDomain.isPromoted && <Zap className="w-6 h-6 text-yellow-500" />}
-                  <h1 className="text-3xl font-bold text-blue-600">{previewDomain.domain}</h1>
+                  {/* Status Badge */}
+                  <div className="mb-4">
+                    {getStatusBadge(previewDomain.status)}
+                  </div>
+
+                  {/* Assets Pills */}
+                  {(previewDomain.hasWebsite || previewDomain.hasLogo || previewDomain.hasBusinessAssets || previewDomain.hasSocialAccounts) && (
+                    <div className="mb-6">
+                      <h3 className="font-semibold text-gray-900 mb-3">Included Assets</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {previewDomain.hasWebsite && (
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                            Website
+                          </span>
+                        )}
+                        {previewDomain.hasLogo && (
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                            Logo
+                          </span>
+                        )}
+                        {previewDomain.hasBusinessAssets && (
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                            Business Assets
+                          </span>
+                        )}
+                        {previewDomain.hasSocialAccounts && (
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-pink-100 text-pink-800">
+                            Social Accounts
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Domain Info */}
+                  <div className="space-y-4">
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-1">Category</p>
+                      <p className="font-semibold text-gray-900">{previewDomain.category}</p>
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-1">Price Type</p>
+                      <p className="font-semibold text-gray-900">{getPriceTypeLabel(previewDomain.priceType)}</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  {getStatusBadge(previewDomain.status)}
-                  {previewDomain.isPromoted && (
-                    <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
-                      Promoted
-                    </span>
+
+                {/* Right Column - Details */}
+                <div className="md:col-span-2 space-y-6">
+                  {/* Price Section */}
+                  <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        {previewDomain.priceType === 'accepting_offers' && previewDomain.hideMinimumOffer ? (
+                          <>
+                            <p className="text-sm text-gray-600 mb-1">Price</p>
+                            <p className="text-3xl font-bold text-gray-900">Accepting Offers</p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-sm text-gray-600 mb-1">{getPriceTypeLabel(previewDomain.priceType)}</p>
+                            <p className="text-3xl font-bold text-gray-900">
+                              ${previewDomain.price.toLocaleString()}
+                            </p>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Seller Notice */}
+                  <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    {previewDomain.priceType === 'asking' && (
+                      <>
+                        <p className="text-sm font-semibold text-blue-900 mb-2">Fixed-Price Sale</p>
+                        <p className="text-sm text-blue-800">
+                          By listing this domain at a fixed price, the seller indicates intent to sell to the first buyer who completes payment at the listed price.
+                        </p>
+                      </>
+                    )}
+                    {previewDomain.priceType === 'accepting_offers' && (
+                      <>
+                        <p className="text-sm font-semibold text-blue-900 mb-2">Negotiated Offers</p>
+                        <p className="text-sm text-blue-800">
+                          The seller allows buyers to submit purchase proposals for review. Accepting an offer indicates intent to sell at the agreed price.
+                        </p>
+                      </>
+                    )}
+                    {previewDomain.priceType === 'starting_bid' && (
+                      <>
+                        <p className="text-sm font-semibold text-blue-900 mb-2">Auction Listing</p>
+                        <p className="text-sm text-blue-800">
+                          The seller agrees to sell the domain to the winning bidder if the auction concludes with a valid bid that meets any stated reserve requirements.
+                        </p>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Description */}
+                  {previewDomain.description && previewDomain.description.trim() && (
+                    <div className="mb-6">
+                      <h3 className="font-semibold text-gray-900 mb-2">Description</h3>
+                      <p className="text-gray-700 whitespace-pre-wrap break-words">{previewDomain.description}</p>
+                    </div>
+                  )}
+
+                  {/* Asset Details */}
+                  {(previewDomain.hasWebsite || previewDomain.hasLogo || previewDomain.hasBusinessAssets || previewDomain.hasSocialAccounts) && (
+                    <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                      <h3 className="font-semibold text-gray-900 mb-4">Asset Details</h3>
+                      <div className="space-y-3">
+                        {previewDomain.hasWebsite && (
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">Website</p>
+                            <p className="text-sm text-gray-600">Website included</p>
+                          </div>
+                        )}
+                        {previewDomain.hasLogo && (
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">Logo</p>
+                            <p className="text-sm text-gray-600">Professional logo included</p>
+                          </div>
+                        )}
+                        {previewDomain.hasBusinessAssets && (
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">Business Assets</p>
+                            <p className="text-sm text-gray-600">Business assets included</p>
+                          </div>
+                        )}
+                        {previewDomain.hasSocialAccounts && (
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">Social Accounts</p>
+                            <p className="text-sm text-gray-600">Social media accounts included</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
 
-              {/* Assets Included */}
-              {(previewDomain.hasWebsite || previewDomain.hasLogo || previewDomain.hasBusinessAssets || previewDomain.hasSocialAccounts) && (
-                <div>
-                  <p className="text-sm font-semibold text-gray-900 mb-3">Included Assets</p>
-                  <div className="flex flex-wrap gap-2">
-                    {previewDomain.hasWebsite && (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                        Website
-                      </span>
-                    )}
-                    {previewDomain.hasLogo && (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
-                        Logo
-                      </span>
-                    )}
-                    {previewDomain.hasBusinessAssets && (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                        Business Assets
-                      </span>
-                    )}
-                    {previewDomain.hasSocialAccounts && (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-pink-100 text-pink-800">
-                        Social Accounts
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Category & Price */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="text-sm text-gray-600 mb-1">Category</p>
-                  <p className="text-lg font-semibold text-gray-900">{previewDomain.category}</p>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="text-sm text-gray-600 mb-1">Price Type</p>
-                  <p className="text-lg font-semibold text-gray-900">{getPriceTypeLabel(previewDomain.priceType)}</p>
-                </div>
-              </div>
-
-              {/* Price */}
-              <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-                {previewDomain.priceType === 'accepting_offers' && previewDomain.hideMinimumOffer ? (
-                  <>
-                    <p className="text-sm text-blue-600 mb-1">Price</p>
-                    <p className="text-3xl font-bold text-blue-700">Accepting Offers</p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-sm text-blue-600 mb-1">Asking Price</p>
-                    <p className="text-3xl font-bold text-blue-700">${previewDomain.price.toLocaleString()}</p>
-                  </>
-                )}
-              </div>
-
-              {/* Description */}
-              {previewDomain.description && (
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Description</h3>
-                  <p className="text-gray-700 whitespace-pre-wrap">{previewDomain.description}</p>
-                </div>
-              )}
-
-              {/* Metadata */}
-              <div className="border-t border-gray-200 pt-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-gray-600">Listed Date</p>
-                    <p className="font-medium text-gray-900">
-                      {previewDomain.createdAt?.toDate?.()?.toLocaleDateString() || 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">Status</p>
-                    <p className="font-medium text-gray-900 capitalize">{previewDomain.status.replace('_', ' ')}</p>
-                  </div>
-                </div>
-              </div>
-
               {/* Action Buttons */}
-              <div className="flex gap-3 pt-4 border-t border-gray-200">
+              <div className="flex gap-3 pt-6 border-t border-gray-200 mt-6">
                 <button
                   onClick={() => setPreviewDomain(null)}
                   className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
