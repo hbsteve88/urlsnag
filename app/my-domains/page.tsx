@@ -800,13 +800,15 @@ export default function MyDomainsPage() {
                       </div>
                       <div>
                         <p className="text-gray-500">Price</p>
-                        {domain.priceType === 'accepting_offers' && domain.hideMinimumOffer ? (
-                          <p className="font-medium text-gray-900">Price Hidden</p>
-                        ) : domain.priceType === 'starting_bid' && domain.hideReservePrice ? (
-                          <p className="font-medium text-gray-900">Price Hidden</p>
-                        ) : (
+                        <div className="flex items-center gap-2">
                           <p className="font-medium text-gray-900">${domain.price.toLocaleString()}</p>
-                        )}
+                          {domain.priceType === 'accepting_offers' && domain.hideMinimumOffer && (
+                            <span className="text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded">Hidden</span>
+                          )}
+                          {domain.priceType === 'starting_bid' && domain.hideReservePrice && (
+                            <span className="text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded">Hidden</span>
+                          )}
+                        </div>
                       </div>
                       <div>
                         <p className="text-gray-500">Price Type</p>
