@@ -535,11 +535,22 @@ export default function DomainDetails({
               {(listing.hasWebsite || listing.hasLogo || listing.hasBusinessAssets || listing.hasSocialAccounts) && (
                 <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
                   <h3 className="font-semibold text-gray-900 mb-4">Asset Details</h3>
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {listing.hasWebsite && (
                       <div>
-                        <p className="text-sm font-medium text-gray-900">Website</p>
-                        <p className="text-sm text-gray-600">{listing.website || 'Website included'}</p>
+                        <p className="text-sm font-medium text-gray-900 mb-1">Website</p>
+                        {(listing as any).website ? (
+                          <a
+                            href={(listing as any).website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline break-all"
+                          >
+                            {(listing as any).website}
+                          </a>
+                        ) : (
+                          <p className="text-sm text-gray-600">Website included</p>
+                        )}
                       </div>
                     )}
                     {listing.hasLogo && (
@@ -550,21 +561,50 @@ export default function DomainDetails({
                     )}
                     {listing.hasBusinessAssets && (
                       <div>
-                        <p className="text-sm font-medium text-gray-900">Business Assets</p>
-                        <p className="text-sm text-gray-600">{listing.businessName || 'Business assets included'}</p>
-                        {listing.businessDescription && (
-                          <p className="text-sm text-gray-600 mt-1">{listing.businessDescription}</p>
+                        <p className="text-sm font-medium text-gray-900 mb-1">Business Assets</p>
+                        {(listing as any).businessName && (
+                          <p className="text-sm text-gray-600 mb-1"><span className="font-medium">Name:</span> {(listing as any).businessName}</p>
+                        )}
+                        {(listing as any).businessDescription && (
+                          <p className="text-sm text-gray-600 mb-1"><span className="font-medium">Description:</span> {(listing as any).businessDescription}</p>
+                        )}
+                        {(listing as any).businessAssets && (listing as any).businessAssets.length > 0 && (
+                          <div className="text-sm text-gray-600">
+                            <p className="font-medium mb-1">Included Assets:</p>
+                            <ul className="list-disc list-inside space-y-0.5">
+                              {(listing as any).businessAssets.map((asset: any, idx: number) => (
+                                <li key={idx}>{asset.type || asset}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {!(listing as any).businessName && !(listing as any).businessDescription && (!(listing as any).businessAssets || (listing as any).businessAssets.length === 0) && (
+                          <p className="text-sm text-gray-600">Business assets included</p>
                         )}
                       </div>
                     )}
                     {listing.hasSocialAccounts && (
                       <div>
-                        <p className="text-sm font-medium text-gray-900">Social Accounts</p>
-                        <p className="text-sm text-gray-600">
-                          {listing.socialMedia && listing.socialMedia.length > 0
-                            ? `${listing.socialMedia.length} social media account${listing.socialMedia.length !== 1 ? 's' : ''}`
-                            : 'Social media accounts included'}
-                        </p>
+                        <p className="text-sm font-medium text-gray-900 mb-2">Social Accounts</p>
+                        {(listing as any).socialMedia && (listing as any).socialMedia.length > 0 ? (
+                          <div className="space-y-1.5">
+                            {(listing as any).socialMedia.map((social: any, idx: number) => (
+                              <div key={idx} className="flex items-center gap-2">
+                                <span className="text-sm font-medium text-gray-700 min-w-20">{social.platform}:</span>
+                                <a
+                                  href={social.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-sm text-blue-600 hover:text-blue-800 hover:underline break-all"
+                                >
+                                  {social.url}
+                                </a>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-600">Social media accounts included</p>
+                        )}
                       </div>
                     )}
                   </div>
