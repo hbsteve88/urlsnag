@@ -177,11 +177,20 @@ export default function EditDomainPage() {
 
     fetchDomain()
     
+    // Disable automatic scroll restoration to prevent jumping to top
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual'
+    }
+    
     // Add wheel event listener to prevent scroll from changing number inputs
     document.addEventListener('wheel', preventNumberInputScroll, { passive: false })
     
     return () => {
       document.removeEventListener('wheel', preventNumberInputScroll)
+      // Re-enable scroll restoration on cleanup
+      if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'auto'
+      }
     }
   }, [user, authLoading, router, domainId])
 
