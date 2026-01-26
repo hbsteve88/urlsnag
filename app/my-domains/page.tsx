@@ -864,11 +864,6 @@ export default function MyDomainsPage() {
                     </div>
                   )}
 
-                  {/* Status Badge */}
-                  <div className="mb-4">
-                    {getStatusBadge(previewDomain.status)}
-                  </div>
-
                   {/* Assets Pills */}
                   {(previewDomain.hasWebsite || previewDomain.hasLogo || previewDomain.hasBusinessAssets || previewDomain.hasSocialAccounts) && (
                     <div className="mb-6">
