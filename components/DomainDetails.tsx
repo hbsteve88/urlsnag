@@ -527,7 +527,7 @@ export default function DomainDetails({
               {listing.description && listing.description.trim() && (
               <div className="mb-6">
                 <h3 className="font-semibold text-gray-900 mb-2">Description</h3>
-                <p className="text-gray-700">{listing.description}</p>
+                <p className="text-gray-700 whitespace-pre-wrap break-words">{listing.description}</p>
               </div>
               )}
 
