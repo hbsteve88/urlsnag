@@ -13,7 +13,7 @@ import { AlertCircle, Loader, Upload, X, ChevronDown, Link2, Trash2 } from 'luci
 import { CATEGORIES, suggestCategory } from '@/lib/categories'
 import { collection, query, where, getDocs } from 'firebase/firestore'
 
-// Hide number input spinners
+// Hide number input spinners and prevent scroll wheel changes
 const hideNumberSpinnersStyle = `
   input[type="number"]::-webkit-outer-spin-button,
   input[type="number"]::-webkit-inner-spin-button {
@@ -24,6 +24,13 @@ const hideNumberSpinnersStyle = `
     -moz-appearance: textfield;
   }
 `
+
+// Prevent scroll wheel from changing number input values
+const preventNumberInputScroll = (e: WheelEvent) => {
+  if ((e.target as HTMLElement).tagName === 'INPUT' && (e.target as HTMLInputElement).type === 'number') {
+    e.preventDefault()
+  }
+}
 
 interface DomainListing {
   id: string
@@ -168,6 +175,13 @@ export default function EditDomainPage() {
     }
 
     fetchDomain()
+    
+    // Add wheel event listener to prevent scroll from changing number inputs
+    document.addEventListener('wheel', preventNumberInputScroll, { passive: false })
+    
+    return () => {
+      document.removeEventListener('wheel', preventNumberInputScroll)
+    }
   }, [user, authLoading, router, domainId])
 
   const fetchDomain = async () => {

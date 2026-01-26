@@ -17,6 +17,13 @@ import { useAuth } from '@/components/AuthContext'
 import { CheckCircle, AlertCircle, Upload, X, ChevronDown, Loader } from 'lucide-react'
 import { CATEGORIES } from '@/lib/categories'
 
+// Prevent scroll wheel from changing number input values
+const preventNumberInputScroll = (e: WheelEvent) => {
+  if ((e.target as HTMLElement).tagName === 'INPUT' && (e.target as HTMLInputElement).type === 'number') {
+    e.preventDefault()
+  }
+}
+
 export default function SellPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
@@ -122,6 +129,14 @@ export default function SellPage() {
     }
   }
 
+  useEffect(() => {
+    // Add wheel event listener to prevent scroll from changing number inputs
+    document.addEventListener('wheel', preventNumberInputScroll, { passive: false })
+    
+    return () => {
+      document.removeEventListener('wheel', preventNumberInputScroll)
+    }
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target

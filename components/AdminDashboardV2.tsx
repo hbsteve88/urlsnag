@@ -8,6 +8,13 @@ import { useToast } from '@/components/ToastContext'
 import { CheckCircle, XCircle, Clock, AlertCircle, Filter, Search, Edit2, Trash2, Zap, Eye } from 'lucide-react'
 import { CATEGORIES, getCategoryConfig } from '@/lib/categories'
 
+// Prevent scroll wheel from changing number input values
+const preventNumberInputScroll = (e: WheelEvent) => {
+  if ((e.target as HTMLElement).tagName === 'INPUT' && (e.target as HTMLInputElement).type === 'number') {
+    e.preventDefault()
+  }
+}
+
 const CANNED_REJECTIONS = [
   'Adult content not properly identified/declared',
   'Incomplete or missing listing information',
@@ -116,6 +123,13 @@ export default function AdminDashboardV2() {
   useEffect(() => {
     if (authLoading || !user) return
     fetchAllListings()
+    
+    // Add wheel event listener to prevent scroll from changing number inputs
+    document.addEventListener('wheel', preventNumberInputScroll, { passive: false })
+    
+    return () => {
+      document.removeEventListener('wheel', preventNumberInputScroll)
+    }
   }, [user, authLoading])
 
   const fetchAllListings = async () => {

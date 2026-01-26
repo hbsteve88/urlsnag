@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X, AlertCircle } from 'lucide-react'
 import { CATEGORIES } from '@/lib/categories'
 
@@ -14,6 +14,13 @@ const styles = `
     -moz-appearance: textfield;
   }
 `
+
+// Prevent scroll wheel from changing number input values
+const preventNumberInputScroll = (e: WheelEvent) => {
+  if ((e.target as HTMLElement).tagName === 'INPUT' && (e.target as HTMLInputElement).type === 'number') {
+    e.preventDefault()
+  }
+}
 
 interface DomainListing {
   id: string
@@ -76,6 +83,15 @@ export default function BulkEditModal({
   const [hideReservePrice, setHideReservePrice] = useState(
     selectedDomains[0]?.hideReservePrice || false
   )
+
+  useEffect(() => {
+    // Add wheel event listener to prevent scroll from changing number inputs
+    document.addEventListener('wheel', preventNumberInputScroll, { passive: false })
+    
+    return () => {
+      document.removeEventListener('wheel', preventNumberInputScroll)
+    }
+  }, [])
 
   const handleApply = async () => {
     const updates: BulkEditUpdates = {
